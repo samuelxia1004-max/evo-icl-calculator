@@ -197,6 +197,18 @@
         <div class="rangecap"><span>-6.00</span><span></span><span>0.00</span></div>
         <div class="note-x" id="rangeNote"></div>
       </div>
+
+      <div class="field">
+        <div class="flabel">
+          <span class="name">计划植入方位 <span>· Orientation</span></span>
+          <span class="val" id="orientVal">水平</span>
+        </div>
+        <div class="seg" id="orientSeg">
+          <button data-v="0" class="on">水平 Horizontal</button>
+          <button data-v="1">垂直 Vertical</button>
+        </div>
+        <div class="note-x">垂直植入睫状沟更大 → 压缩更小 → 拱高通常更低（约 −127 μm）</div>
+      </div>
     </div>
 
     <!-- RESULT -->
@@ -268,12 +280,12 @@
 
   <!-- equation + disclaimer -->
   <div class="eq">
-    <b>主公式</b>　拱高(μm) = <span class="muted">−1775.5</span> + <b>308.2</b>×ACD + <b>106.8</b>×ICL尺寸 − <b>38.7</b>×柱镜<br>
-    <b>风险</b>　　logit = −25.65 + 2.767×ACD + 1.169×ICL尺寸 − 0.481×柱镜　;　P(高) = 1 / (1 + e<span class="muted">^−logit</span>)
+    <b>重建主公式</b>　拱高(μm) = <span class="muted">−2056.2</span> + <b>284.8</b>×ACD + <b>138.8</b>×ICL尺寸 − <b>30.0</b>×柱镜 − <b>127.1</b>×植入方位<span class="muted">(垂直=1)</span><br>
+    <b>风险</b>　　logit = −31.00 + 2.892×ACD + 1.588×ICL尺寸 − 0.425×柱镜 − 1.327×植入方位　;　P(高) = 1 / (1 + e<span class="muted">^−logit</span>)
   </div>
 
   <p class="disc">
-    <strong>用途与限制。</strong>本工具依据单中心 397 眼回顾性数据拟合的经验公式，输出为术后早期 OCT 拱高的<strong>群体平均估计</strong>，用于术前风险分层与尺寸取舍参考，<strong>不能替代术者判断</strong>。单眼点预测存在不确定性（一致性界限较宽）；跨设备/随访时点使用前应做外部校准。柱镜按“非散光 = 0”编码。超出研究变量分布范围（ACD≈2.8–3.8 mm、ICL 12.1–13.7 mm、cyl 0~−6 D）时外推需谨慎。数值与方法详见配套论文《基于术前眼前节生物测量与人工晶体参数的 ICL 植入术后拱高机器学习预测模型》。
+    <strong>用途与限制。</strong>本工具依据单中心 397 眼回顾性数据拟合的经验公式，输出为术后早期 OCT 拱高的<strong>群体平均估计</strong>，用于术前风险分层与尺寸取舍参考，<strong>不能替代术者判断</strong>。单眼点预测存在不确定性（MAE≈150 μm，一致性界限较宽）；跨设备/随访时点使用前应做外部校准。改变<strong>植入方位</strong>可作为调节拱高的手术手段（垂直较水平约低 127 μm）。柱镜按“非散光 = 0”编码。超出研究变量分布范围（ACD≈2.8–3.8 mm、ICL 12.1–13.7 mm、cyl 0~−6 D）时外推需谨慎。数值与方法详见配套论文《基于术前眼前节生物测量与人工晶体参数的 ICL 植入术后拱高机器学习预测模型》。
   </p>
 
 </div>
@@ -281,13 +293,14 @@
 <script>
 (function(){
   // exact coefficients (from formula_results.json)
-  var B={i:-1775.4585, acd:308.1748, icl:106.8019, cyl:-38.6986};
-  var L={i:-25.653874, acd:2.767431, icl:1.169259, cyl:-0.481136};
-  var MAE=162, SCALE_MAX=1300;
+  var B={i:-2056.2495, acd:284.7607, icl:138.7733, cyl:-30.0215, vert:-127.1224};
+  var L={i:-31.0030, acd:2.8923, icl:1.5878, cyl:-0.4253, vert:-1.3268};
+  var MAE=150, SCALE_MAX=1300;
 
   var acd=document.getElementById('acd'), cyl=document.getElementById('cyl');
   var iclSeg=document.getElementById('iclSeg');
   var iclValue=13.2;
+  var orientValue=0;  // 0=horizontal, 1=vertical
 
   var el=function(id){return document.getElementById(id);};
   function clampPct(x){return Math.max(0,Math.min(100,x));}
@@ -299,16 +312,17 @@
     return {t:'高拱高', c:'var(--high)'};
   }
 
-  function contribRows(a,i,c){
-    var base=B.i, cA=B.acd*a, cI=B.icl*i, cC=B.cyl*c, sum=base+cA+cI+cC;
+  function contribRows(a,i,c,sv){
+    var base=B.i, cA=B.acd*a, cI=B.icl*i, cC=B.cyl*c, cV=B.vert*sv, sum=base+cA+cI+cC+cV;
     var items=[
       {n:'基线',    v:base, cls:'base'},
       {n:'ACD',     v:cA,   cls:cA>=0?'pos':'neg'},
       {n:'ICL 尺寸', v:cI,   cls:cI>=0?'pos':'neg'},
-      {n:'柱镜',    v:cC,   cls:cC>=0?'pos':'neg'}
+      {n:'柱镜',    v:cC,   cls:cC>=0?'pos':'neg'},
+      {n:'植入方位', v:cV,   cls:cV>=0?'pos':'neg'}
     ];
     // scale bars against max abs contribution (excluding baseline offset feel)
-    var maxAbs=Math.max(Math.abs(base),Math.abs(cA),Math.abs(cI),Math.abs(cC),1);
+    var maxAbs=Math.max(Math.abs(base),Math.abs(cA),Math.abs(cI),Math.abs(cC),Math.abs(cV),1);
     var html='';
     items.forEach(function(it){
       var w=Math.abs(it.v)/maxAbs*48; // up to 48% of half-track
@@ -345,12 +359,12 @@
   }
 
   function compute(){
-    var a=parseFloat(acd.value), i=iclValue, c=parseFloat(cyl.value);
+    var a=parseFloat(acd.value), i=iclValue, c=parseFloat(cyl.value), sv=orientValue;
     el('acdVal').textContent=a.toFixed(2);
     el('cylVal').textContent=c.toFixed(2);
     el('iclVal').textContent=i.toFixed(1);
 
-    var v=B.i + B.acd*a + B.icl*i + B.cyl*c;
+    var v=B.i + B.acd*a + B.icl*i + B.cyl*c + B.vert*sv;
     var vShown=Math.round(v);
     el('vault').textContent=vShown;
 
@@ -364,14 +378,14 @@
     var band=el('band'); band.style.left=lo+'%'; band.style.width=Math.max(0,hi-lo)+'%';
 
     // probability
-    var z=L.i + L.acd*a + L.icl*i + L.cyl*c;
+    var z=L.i + L.acd*a + L.icl*i + L.cyl*c + L.vert*sv;
     var p=1/(1+Math.exp(-z));
     el('pHigh').textContent=Math.round(p*100)+'%';
     el('pFill').style.width=clampPct(p*100)+'%';
     el('pHigh').style.color = p>0.5? 'var(--high)' : (p>0.25?'var(--ink)':'var(--optimal)');
 
     updateEye(v);
-    contribRows(a,i,c);
+    contribRows(a,i,c,sv);
     rangeCheck(a,i,c);
   }
 
@@ -382,6 +396,14 @@
     var b=e.target.closest('button'); if(!b) return;
     [].forEach.call(iclSeg.children,function(x){x.classList.remove('on');});
     b.classList.add('on'); iclValue=parseFloat(b.dataset.v); compute();
+  });
+  var orientSeg=document.getElementById('orientSeg');
+  orientSeg.addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b) return;
+    [].forEach.call(orientSeg.children,function(x){x.classList.remove('on');});
+    b.classList.add('on'); orientValue=parseInt(b.dataset.v,10);
+    document.getElementById('orientVal').textContent = orientValue? '垂直':'水平';
+    compute();
   });
 
   compute();
