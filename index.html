@@ -23,34 +23,27 @@
     -webkit-font-smoothing:antialiased; padding:28px 20px 56px;
   }
   .wrap{max-width:1060px; margin:0 auto}
-
-  /* header */
   header{display:flex; flex-wrap:wrap; align-items:flex-end; gap:14px 22px;
     padding-bottom:16px; border-bottom:1px solid var(--line); margin-bottom:22px}
   .mark{display:flex; align-items:center; gap:12px}
-  .mark svg{flex:none}
   h1{font-size:22px; margin:0; font-weight:650; letter-spacing:.2px}
   h1 .en{display:block; font-size:12px; font-weight:500; color:var(--muted);
     letter-spacing:1.6px; text-transform:uppercase; margin-top:3px}
   .prov{margin-left:auto; display:flex; gap:8px; flex-wrap:wrap}
   .tag{font-family:var(--mono); font-size:11px; color:var(--petrol-deep);
     background:#DCE9E7; border:1px solid #BFD5D1; border-radius:2px; padding:3px 8px}
-
-  /* layout */
-  .grid{display:grid; grid-template-columns:minmax(300px,0.9fr) 1.1fr; gap:18px; align-items:stretch}
-  @media(max-width:760px){.grid{grid-template-columns:1fr}}
-  .card{background:var(--panel); border:1px solid var(--line-soft);
-    border-radius:6px; padding:20px}
+  .grid{display:grid; grid-template-columns:minmax(300px,0.95fr) 1.05fr; gap:18px; align-items:stretch}
+  @media(max-width:820px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--panel); border:1px solid var(--line-soft); border-radius:6px; padding:20px}
   .card h2{font-size:11px; letter-spacing:1.8px; text-transform:uppercase;
-    color:var(--muted); margin:0 0 16px; font-weight:600}
-
-  /* inputs */
-  .field{margin-bottom:20px}
+    color:var(--muted); margin:0 0 16px; font-weight:600; display:flex; justify-content:space-between; align-items:center}
+  .field{margin-bottom:18px}
   .field:last-child{margin-bottom:0}
-  .flabel{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px}
+  .flabel{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:7px}
   .flabel .name{font-size:14px; font-weight:600}
   .flabel .name span{color:var(--muted); font-weight:400; font-size:12px}
-  .val{font-family:var(--mono); font-size:16px; color:var(--petrol-deep); font-weight:600}
+  .inrow{display:flex; align-items:center; gap:10px}
+  .inrow input[type=range]{flex:1}
   input[type=range]{-webkit-appearance:none; appearance:none; width:100%; height:4px;
     background:var(--line); border-radius:4px; outline:none; margin:6px 0}
   input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; appearance:none;
@@ -58,82 +51,102 @@
     border:3px solid #fff; box-shadow:0 1px 3px rgba(10,61,68,.4); cursor:pointer}
   input[type=range]::-moz-range-thumb{width:16px; height:16px; border-radius:50%;
     background:var(--petrol); border:3px solid #fff; cursor:pointer}
+  .numbox{width:76px; font-family:var(--mono); font-size:15px; font-weight:600; color:var(--petrol-deep);
+    text-align:right; padding:6px 8px; border:1px solid var(--line); border-radius:4px; background:#fff}
+  .numbox:focus{outline:none; border-color:var(--petrol); box-shadow:0 0 0 2px rgba(14,90,99,.12)}
+  .numbox.wide{width:100%}
   .rangecap{display:flex; justify-content:space-between; font-family:var(--mono);
-    font-size:10px; color:var(--muted)}
+    font-size:10px; color:var(--muted); margin-top:2px}
   .seg{display:grid; grid-template-columns:repeat(4,1fr); gap:6px}
+  .seg.two{grid-template-columns:repeat(2,1fr)}
   .seg button{font-family:var(--mono); font-size:14px; padding:9px 0; cursor:pointer;
-    background:var(--panel-2); border:1px solid var(--line); border-radius:4px; color:var(--ink);
-    transition:all .12s}
+    background:var(--panel-2); border:1px solid var(--line); border-radius:4px; color:var(--ink); transition:all .12s}
   .seg button:hover{border-color:var(--petrol)}
   .seg button.on{background:var(--petrol); color:#fff; border-color:var(--petrol)}
-  .cylrow{display:flex; align-items:center; gap:10px}
-  .cylrow input[type=range]{flex:1}
   .chip-btn{font-size:11px; font-family:var(--mono); white-space:nowrap; cursor:pointer;
     background:none; border:1px solid var(--line); border-radius:3px; padding:5px 8px; color:var(--muted)}
   .chip-btn:hover{border-color:var(--petrol); color:var(--petrol-deep)}
   .note-x{font-size:11px; color:var(--high); margin-top:8px; min-height:14px; font-weight:500}
-
+  /* advanced / collapsible */
+  .adv{margin-top:16px; border-top:1px dashed var(--line); padding-top:14px}
+  .adv-head{display:flex; align-items:center; gap:10px; cursor:pointer; user-select:none}
+  .adv-head .chev{font-family:var(--mono); color:var(--muted); transition:transform .2s}
+  .adv-head.open .chev{transform:rotate(90deg)}
+  .adv-head .t{font-size:13px; font-weight:650; color:var(--petrol-deep)}
+  .adv-head .st{font-size:11px; color:var(--muted); margin-left:auto}
+  .adv-body{display:none; margin-top:14px}
+  .adv-body.open{display:block}
+  .switch{display:flex; align-items:center; gap:8px; font-size:12px; color:var(--muted); margin-bottom:14px}
+  .switch input{width:16px; height:16px; accent-color:var(--petrol)}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  /* record parser */
+  .rec{margin-top:16px; border-top:1px dashed var(--line); padding-top:14px}
+  .rec textarea{width:100%; min-height:70px; font-family:var(--mono); font-size:12px; padding:8px;
+    border:1px solid var(--line); border-radius:4px; resize:vertical; background:#fff; color:var(--ink)}
+  .rec textarea:focus{outline:none; border-color:var(--petrol)}
+  .btn{font-family:var(--sans); font-size:13px; font-weight:600; cursor:pointer; padding:8px 14px;
+    background:var(--petrol); color:#fff; border:1px solid var(--petrol); border-radius:4px; transition:all .12s}
+  .btn:hover{background:var(--petrol-deep)}
+  .btn.ghost{background:none; color:var(--petrol-deep); border-color:var(--line)}
+  .btn.ghost:hover{border-color:var(--petrol)}
+  .recmsg{font-size:11.5px; color:var(--optimal); margin-top:8px; min-height:14px; line-height:1.5}
   /* result */
-  .result{display:flex; flex-direction:column}
   .readout{display:flex; align-items:baseline; gap:14px; flex-wrap:wrap}
-  .bignum{font-family:var(--mono); font-size:58px; font-weight:650; line-height:.95;
-    color:var(--ink); font-variant-numeric:tabular-nums}
+  .bignum{font-family:var(--mono); font-size:56px; font-weight:650; line-height:.95; color:var(--ink); font-variant-numeric:tabular-nums}
   .bignum .u{font-size:20px; color:var(--muted); font-weight:500; margin-left:4px}
   .classchip{font-size:13px; font-weight:650; padding:5px 12px; border-radius:3px; color:#fff; letter-spacing:.3px}
   .sub{font-family:var(--mono); font-size:12px; color:var(--muted); margin-top:6px}
-
-  /* band meter */
-  .meter-wrap{margin:22px 0 6px}
-  .meter{position:relative; height:34px; border-radius:4px; overflow:hidden;
-    display:flex; border:1px solid var(--line)}
+  .meter-wrap{margin:20px 0 6px}
+  .meter{position:relative; height:34px; border-radius:4px; overflow:hidden; display:flex; border:1px solid var(--line)}
   .zone{height:100%; display:flex; align-items:center; justify-content:center;
     font-family:var(--mono); font-size:10px; color:#fff; letter-spacing:.5px; opacity:.92}
   .z-low{background:var(--low)} .z-opt{background:var(--optimal)} .z-high{background:var(--high)}
   .band{position:absolute; top:0; height:100%; background:rgba(16,38,43,.16);
     border-left:1px dashed rgba(16,38,43,.4); border-right:1px dashed rgba(16,38,43,.4);
     transition:left .35s cubic-bezier(.4,0,.2,1), width .35s cubic-bezier(.4,0,.2,1)}
-  .needle{position:absolute; top:-6px; width:2px; height:46px; background:var(--ink);
-    transition:left .35s cubic-bezier(.4,0,.2,1)}
+  .needle{position:absolute; top:-6px; width:2px; height:46px; background:var(--ink); transition:left .35s cubic-bezier(.4,0,.2,1)}
   .needle::before{content:""; position:absolute; top:-1px; left:-4px; width:0; height:0;
     border-left:5px solid transparent; border-right:5px solid transparent; border-top:7px solid var(--ink)}
-  .ticks{display:flex; justify-content:space-between; font-family:var(--mono);
-    font-size:10px; color:var(--muted); margin-top:5px}
-
-  /* schematic */
-  .schematic{margin-top:20px; background:var(--panel-2); border:1px solid var(--line-soft);
-    border-radius:5px; padding:14px 14px 8px}
-  .schematic .cap{font-family:var(--mono); font-size:10px; color:var(--muted);
-    display:flex; justify-content:space-between; margin-top:4px}
-
-  /* probability */
-  .prob{display:flex; align-items:center; gap:14px; margin-top:18px;
-    padding-top:16px; border-top:1px solid var(--line-soft)}
+  .ticks{display:flex; justify-content:space-between; font-family:var(--mono); font-size:10px; color:var(--muted); margin-top:5px}
+  .schematic{margin-top:18px; background:var(--panel-2); border:1px solid var(--line-soft); border-radius:5px; padding:14px 14px 8px}
+  .schematic .cap{font-family:var(--mono); font-size:10px; color:var(--muted); display:flex; justify-content:space-between; margin-top:4px}
+  .prob{display:flex; align-items:center; gap:14px; margin-top:18px; padding-top:16px; border-top:1px solid var(--line-soft)}
   .prob .pnum{font-family:var(--mono); font-size:30px; font-weight:650; font-variant-numeric:tabular-nums}
   .prob .plabel{font-size:12px; color:var(--muted); line-height:1.35}
-  .pbar{flex:1; height:8px; background:var(--line); border-radius:6px; overflow:hidden; min-width:90px}
+  .pbar{flex:1; height:8px; background:var(--line); border-radius:6px; overflow:hidden; min-width:80px}
   .pfill{height:100%; background:linear-gradient(90deg,var(--optimal),var(--high)); transition:width .35s}
-
-  /* contribution */
   .contrib{margin-top:18px}
-  .crow{display:grid; grid-template-columns:96px 1fr 76px; align-items:center; gap:10px;
-    padding:5px 0; font-size:13px}
+  .crow{display:grid; grid-template-columns:92px 1fr 70px; align-items:center; gap:10px; padding:4px 0; font-size:13px}
   .crow .cn{color:var(--ink)}
-  .cbar-track{position:relative; height:16px; background:var(--panel-2);
-    border-radius:3px; border:1px solid var(--line-soft)}
+  .cbar-track{position:relative; height:15px; background:var(--panel-2); border-radius:3px; border:1px solid var(--line-soft)}
   .cbar-mid{position:absolute; left:50%; top:-3px; bottom:-3px; width:1px; background:var(--line)}
-  .cbar{position:absolute; top:2px; height:12px; border-radius:2px; transition:all .3s}
+  .cbar{position:absolute; top:2px; height:11px; border-radius:2px; transition:all .3s}
   .cbar.pos{background:var(--optimal)} .cbar.neg{background:var(--low)} .cbar.base{background:#7C9A9E}
   .cval{font-family:var(--mono); font-size:12px; text-align:right; color:var(--petrol-deep)}
   .csum{border-top:1px solid var(--line); margin-top:6px; padding-top:8px; font-weight:650}
-
-  /* footer */
+  /* inverse solver */
+  .solver{margin-top:18px; background:var(--panel); border:1px solid var(--line-soft); border-radius:6px; padding:20px}
+  .solver h2{font-size:11px; letter-spacing:1.8px; text-transform:uppercase; color:var(--muted); margin:0 0 6px; font-weight:600}
+  .solver .lead{font-size:12.5px; color:var(--muted); margin:0 0 16px}
+  .sgrid{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+  @media(max-width:820px){.sgrid{grid-template-columns:1fr}}
+  .stbl{width:100%; border-collapse:collapse; font-size:13px; margin-top:8px}
+  .stbl th,.stbl td{border:1px solid var(--line-soft); padding:7px 9px; text-align:center; font-family:var(--mono)}
+  .stbl th{background:#EDF3F2; color:var(--muted); font-weight:600; font-size:11px}
+  .stbl td.best{background:#DCEFE9; font-weight:700; color:var(--petrol-deep); outline:2px solid var(--optimal)}
+  .stbl td.hd{background:#F3F6F5; font-weight:600; color:var(--ink)}
+  .solrow{display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap}
+  .solrow label{font-size:13px; font-weight:600; min-width:88px}
+  select.sel{font-family:var(--sans); font-size:13px; padding:7px 8px; border:1px solid var(--line); border-radius:4px; background:#fff; color:var(--ink)}
+  .solout{background:var(--ink); color:#DCE9E7; border-radius:5px; padding:12px 14px; font-family:var(--mono);
+    font-size:13px; line-height:1.6; margin-top:10px; min-height:20px}
+  .solout b{color:#fff}
   .eq{margin-top:22px; background:var(--ink); color:#DCE9E7; border-radius:6px; padding:16px 18px;
     font-family:var(--mono); font-size:12.5px; line-height:1.7; overflow-x:auto}
-  .eq b{color:#fff}
-  .eq .muted{color:#7FA0A3}
+  .eq b{color:#fff} .eq .muted{color:#7FA0A3}
+  .eq .tabrow{margin:4px 0}
   .disc{margin-top:14px; font-size:11.5px; color:var(--muted); line-height:1.6}
   .disc strong{color:var(--ink)}
-  a.src{color:var(--petrol-deep)}
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -148,12 +161,11 @@
         <circle cx="17" cy="17" r="4.4" fill="#0E5A63"/>
         <path d="M8 14.2c3.4-2.3 14.6-2.3 18 0" stroke="#C6851C" stroke-width="1.3" fill="none"/>
       </svg>
+      <h1>ICL 术后拱高预测<span class="en">Postoperative Vault Predictor</span></h1>
     </div>
-    <h1>ICL 术后拱高预测<span class="en">Postoperative Vault Predictor</span></h1>
     <div class="prov">
-      <span class="tag">n = 397 眼</span>
-      <span class="tag">CV R² = 0.25</span>
-      <span class="tag">MAE ≈ 162 μm</span>
+      <span class="tag">397 眼 · 200 患者</span>
+      <span class="tag" id="modeTag">核心公式 R²=0.32</span>
     </div>
   </header>
 
@@ -164,247 +176,438 @@
       <h2>术前输入 · Preoperative inputs</h2>
 
       <div class="field">
-        <div class="flabel">
-          <span class="name">前房深度 ACD <span>· mm</span></span>
-          <span class="val" id="acdVal">3.20</span>
+        <div class="flabel"><span class="name">前房深度 ACD <span>· mm</span></span></div>
+        <div class="inrow">
+          <input type="range" id="acd" min="2.60" max="4.00" step="0.01" value="3.20">
+          <input type="number" class="numbox" id="acdN" min="2.60" max="4.00" step="0.01" value="3.20">
         </div>
-        <input type="range" id="acd" min="2.60" max="4.00" step="0.01" value="3.20">
         <div class="rangecap"><span>2.60</span><span>研究范围 2.8–3.8</span><span>4.00</span></div>
       </div>
 
       <div class="field">
-        <div class="flabel">
-          <span class="name">计划 ICL 尺寸 <span>· mm</span></span>
-          <span class="val" id="iclVal">13.2</span>
-        </div>
+        <div class="flabel"><span class="name">计划 ICL 尺寸 <span>· mm</span></span></div>
         <div class="seg" id="iclSeg">
           <button data-v="12.1">12.1</button>
           <button data-v="12.6">12.6</button>
           <button data-v="13.2" class="on">13.2</button>
           <button data-v="13.7">13.7</button>
         </div>
+        <div class="inrow" style="margin-top:8px">
+          <span class="rangecap" style="flex:1">自定义 custom →</span>
+          <input type="number" class="numbox" id="iclN" min="11.5" max="14.0" step="0.1" value="13.2">
+        </div>
       </div>
 
       <div class="field">
-        <div class="flabel">
-          <span class="name">术前柱镜 cyl <span>· D（非散光 = 0）</span></span>
-          <span class="val" id="cylVal">0.00</span>
-        </div>
-        <div class="cylrow">
+        <div class="flabel"><span class="name">术前柱镜 cyl <span>· D（非散光 = 0）</span></span></div>
+        <div class="inrow">
           <input type="range" id="cyl" min="-6" max="0" step="0.25" value="0">
-          <button class="chip-btn" id="cylZero">非散光 0</button>
+          <input type="number" class="numbox" id="cylN" min="-6" max="0" step="0.25" value="0">
         </div>
-        <div class="rangecap"><span>-6.00</span><span></span><span>0.00</span></div>
-        <div class="note-x" id="rangeNote"></div>
+        <div class="rangecap"><span>-6.00</span><button class="chip-btn" id="cylZero">非散光 0</button><span>0.00</span></div>
       </div>
 
       <div class="field">
-        <div class="flabel">
-          <span class="name">计划植入方位 <span>· Orientation</span></span>
-          <span class="val" id="orientVal">水平</span>
-        </div>
-        <div class="seg" id="orientSeg">
+        <div class="flabel"><span class="name">计划植入方位 <span>· Orientation</span></span></div>
+        <div class="seg two" id="orientSeg">
           <button data-v="0" class="on">水平 Horizontal</button>
           <button data-v="1">垂直 Vertical</button>
         </div>
-        <div class="note-x">垂直植入睫状沟更大 → 压缩更小 → 拱高通常更低（约 −127 μm）</div>
+        <div class="note-x" style="color:var(--muted)">垂直植入睫状沟更大 → 压缩更小 → 拱高通常更低（约 −127 μm）</div>
+      </div>
+
+      <!-- ADVANCED: STS / WTW extended formula -->
+      <div class="adv">
+        <div class="adv-head" id="advHead">
+          <span class="chev">▶</span>
+          <span class="t">高级：沟到沟 / 白到白（扩展公式）</span>
+          <span class="st">Advanced · STS / WTW</span>
+        </div>
+        <div class="adv-body" id="advBody">
+          <label class="switch"><input type="checkbox" id="useExt"> 启用扩展公式（纳入 STS_eff 与 WTW，R²=0.34）</label>
+          <div class="grid2">
+            <div>
+              <div class="flabel"><span class="name" style="font-size:13px">白到白 WTW <span>·mm</span></span></div>
+              <input type="number" class="numbox wide" id="wtwN" min="10.5" max="13.0" step="0.01" value="11.58">
+            </div>
+            <div>
+              <div class="flabel"><span class="name" style="font-size:13px">沟到沟 水平 STS_h <span>·mm</span></span></div>
+              <input type="number" class="numbox wide" id="sthN" min="10.0" max="14.0" step="0.01" value="11.76">
+            </div>
+            <div>
+              <div class="flabel"><span class="name" style="font-size:13px">沟到沟 垂直 STS_v <span>·mm</span></span></div>
+              <input type="number" class="numbox wide" id="stvN" min="10.0" max="14.0" step="0.01" value="12.21">
+            </div>
+            <div>
+              <div class="flabel"><span class="name" style="font-size:13px">有效沟径 STS_eff <span>·按方位</span></span></div>
+              <input type="number" class="numbox wide" id="stEff" value="11.76" readonly style="background:var(--panel-2)">
+            </div>
+          </div>
+          <div class="note-x" style="color:var(--muted)">STS_eff 自动按植入方位取：水平→STS_h，垂直→STS_v（斜位按椭圆插值）。留空则退回核心公式。</div>
+        </div>
+      </div>
+
+      <!-- RECORD PARSER -->
+      <div class="rec">
+        <div class="adv-head" style="margin-bottom:10px"><span class="t">粘贴病历自动识别 · Paste record</span></div>
+        <textarea id="recTxt" placeholder="将患者术前病历/生物测量文本粘贴到此，例如：&#10;ACD 3.15mm，白到白WTW 11.6，沟到沟 11.5/12.3，柱镜-1.25D，ICL 12.6，6-12点垂直放置"></textarea>
+        <div style="display:flex; gap:8px; margin-top:8px">
+          <button class="btn" id="recBtn">识别并填入</button>
+          <button class="btn ghost" id="recClear">清空</button>
+        </div>
+        <div class="recmsg" id="recMsg"></div>
       </div>
     </div>
 
     <!-- RESULT -->
     <div class="card result">
       <h2>预测结果 · Prediction</h2>
-
       <div class="readout">
-        <div class="bignum"><span id="vault">620</span><span class="u">μm</span></div>
+        <div class="bignum"><span id="vault">687</span><span class="u">μm</span></div>
         <span class="classchip" id="classChip">理想</span>
       </div>
-      <div class="sub" id="rangeText">典型误差 ± 162 μm（约 68% 眼在 ±200 μm 内）</div>
+      <div class="sub" id="modeSub">核心公式 · ±MAE 150 μm</div>
 
-      <!-- band meter -->
       <div class="meter-wrap">
-        <div class="meter">
-          <div class="zone z-low"  style="width:19.23%">低 &lt;250</div>
-          <div class="zone z-opt"  style="width:38.46%">理想 250–750</div>
-          <div class="zone z-high" style="width:42.31%">高 &gt;750</div>
-          <div class="band"   id="band"></div>
+        <div class="meter" id="meter">
+          <div class="zone z-low" style="width:19.2%">低 &lt;250</div>
+          <div class="zone z-opt" style="width:38.5%">理想 250–750</div>
+          <div class="zone z-high" style="width:42.3%">高 &gt;750</div>
+          <div class="band" id="band"></div>
           <div class="needle" id="needle"></div>
         </div>
-        <div class="ticks"><span>0</span><span>250</span><span>500</span><span>750</span><span>1000</span><span>1300</span></div>
+        <div class="ticks"><span>0</span><span>250</span><span>750</span><span>1300</span></div>
       </div>
 
-      <!-- anterior-segment schematic (signature) -->
       <div class="schematic">
-        <svg id="eyeSvg" viewBox="0 0 460 150" width="100%" height="150" aria-label="前节示意">
-          <!-- aqueous background -->
-          <rect x="0" y="0" width="460" height="150" fill="none"/>
-          <!-- cornea -->
-          <path d="M20 44 Q230 6 440 44" stroke="#0A3D44" stroke-width="2.2" fill="none"/>
-          <path d="M20 44 Q230 6 440 44 L440 50 Q230 12 20 50 Z" fill="#DCE9E7" opacity="0.6"/>
-          <!-- iris shelves -->
-          <rect x="20" y="70" width="150" height="9" rx="4" fill="#8A6D3B"/>
-          <rect x="290" y="70" width="150" height="9" rx="4" fill="#8A6D3B"/>
-          <!-- crystalline lens dome -->
-          <path id="lens" d="M120 132 Q230 92 340 132 Q230 150 120 132 Z" fill="#B9C9C7" stroke="#7C9A9E" stroke-width="1"/>
-          <!-- ICL (arched membrane above lens) -->
-          <path id="icl" d="M150 118 Q230 88 310 118" stroke="#0E5A63" stroke-width="2.4" fill="none"/>
-          <!-- vault measure -->
-          <line id="vLine" x1="230" y1="90" x2="230" y2="120" stroke="#C6851C" stroke-width="1.4"/>
-          <line id="vTop" x1="224" y1="90" x2="236" y2="90" stroke="#C6851C" stroke-width="1.4"/>
-          <line id="vBot" x1="224" y1="120" x2="236" y2="120" stroke="#C6851C" stroke-width="1.4"/>
-          <text id="vTag" x="242" y="98" font-family="ui-monospace,monospace" font-size="12" fill="#0A3D44">620 μm</text>
-          <!-- labels -->
-          <text x="24" y="34" font-family="ui-monospace,monospace" font-size="10" fill="#5C7377">角膜 cornea</text>
-          <text x="196" y="146" font-family="ui-monospace,monospace" font-size="10" fill="#5C7377">晶状体 lens</text>
+        <svg viewBox="0 0 460 150" width="100%" height="150" aria-hidden="true">
+          <defs><linearGradient id="lensG" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#CBD9D7"/><stop offset="1" stop-color="#B4C6C3"/></linearGradient></defs>
+          <path d="M40 40 Q230 8 420 40" stroke="#0A3D44" stroke-width="2" fill="none"/>
+          <text x="44" y="30" font-family="ui-monospace,monospace" font-size="10" fill="#5C7377">角膜 cornea</text>
+          <path d="M95 128 Q230 92 365 128 L365 150 L95 150 Z" fill="url(#lensG)" stroke="#7C9A9E" stroke-width="1"/>
+          <text x="230" y="142" font-family="ui-monospace,monospace" font-size="10" fill="#3f5b5e" text-anchor="middle">晶状体 lens</text>
+          <path id="icl" d="M150 118 Q230 70 310 118" stroke="#0E5A63" stroke-width="2.4" fill="none"/>
           <text x="316" y="112" font-family="ui-monospace,monospace" font-size="10" fill="#0E5A63">ICL</text>
+          <line id="vLine" x1="230" y1="70" x2="230" y2="118" stroke="#C6851C" stroke-width="1.5" stroke-dasharray="3 2"/>
+          <line id="vTop" x1="222" y1="70" x2="238" y2="70" stroke="#C6851C" stroke-width="1.5"/>
+          <text id="vTag" x="236" y="96" font-family="ui-monospace,monospace" font-size="10" fill="#C6851C">687 μm</text>
         </svg>
-        <div class="cap"><span>前节冠状示意（非按比例）Anterior-segment schematic, not to scale</span><span>拱高 = ICL 与晶体间隙</span></div>
+        <div class="cap"><span>前节冠状示意（非按比例）</span><span>拱高 = ICL 与晶体间隙</span></div>
       </div>
 
-      <!-- probability -->
       <div class="prob">
-        <div class="pnum" id="pHigh">20%</div>
-        <div style="flex:1">
-          <div class="plabel">高拱高（&gt;750 μm）概率 · P(high vault)</div>
-          <div class="pbar"><div class="pfill" id="pFill" style="width:20%"></div></div>
-        </div>
+        <div class="pnum" id="pHigh" style="color:var(--ink)">31%</div>
+        <div class="pbar"><div class="pfill" id="pFill" style="width:31%"></div></div>
+        <div class="plabel">高拱高（&gt;750 μm）概率<br>P(high vault)</div>
+      </div>
+
+      <div class="contrib">
+        <div style="font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:8px">逐项贡献 · Contributions</div>
+        <div id="crows"></div>
       </div>
     </div>
   </div>
 
-  <!-- contribution breakdown -->
-  <div class="card contrib" style="margin-top:18px">
-    <h2>计算分解 · How the number is built（主公式）</h2>
-    <div id="crows"></div>
+  <!-- INVERSE SOLVER -->
+  <div class="solver">
+    <h2>反解匹配 · Inverse solver / sizing</h2>
+    <p class="lead">输入目标拱高后，工具会（左）给出各 ICL 尺寸 × 植入方位的预测拱高并标出最接近者；（右）在其余参数固定时反解某一变量所需的取值。</p>
+    <div class="solrow">
+      <label>目标拱高</label>
+      <input type="number" class="numbox" id="targetV" min="150" max="1100" step="10" value="500"><span style="color:var(--muted); font-size:12px">μm</span>
+      <span style="color:var(--muted); font-size:12px; margin-left:8px">（理想区间 250–750，常取 ~500）</span>
+    </div>
+    <div class="sgrid">
+      <div>
+        <div style="font-size:12px; font-weight:650; color:var(--petrol-deep); margin-bottom:4px">① ICL 尺寸 × 方位 推荐表</div>
+        <div style="font-size:11px; color:var(--muted)">按当前 ACD/柱镜（及扩展参数）计算；高亮 = 最接近目标</div>
+        <table class="stbl" id="sizeTbl"></table>
+      </div>
+      <div>
+        <div style="font-size:12px; font-weight:650; color:var(--petrol-deep); margin-bottom:8px">② 反解单个变量</div>
+        <div class="solrow">
+          <label>求解变量</label>
+          <select class="sel" id="solveVar">
+            <option value="ICL_size">ICL 尺寸</option>
+            <option value="ACD">ACD（前房深度）</option>
+            <option value="cyl">柱镜 cyl</option>
+            <option value="WTW">白到白 WTW（扩展）</option>
+            <option value="STS_eff">有效沟径 STS_eff（扩展）</option>
+          </select>
+          <button class="btn" id="solveBtn">求解</button>
+        </div>
+        <div class="solout" id="solveOut">选择变量并点击「求解」。其余参数将取上方当前输入值。</div>
+      </div>
+    </div>
   </div>
 
-  <!-- equation + disclaimer -->
+  <!-- FORMULA -->
   <div class="eq">
-    <b>重建主公式</b>　拱高(μm) = <span class="muted">−2056.2</span> + <b>284.8</b>×ACD + <b>138.8</b>×ICL尺寸 − <b>30.0</b>×柱镜 − <b>127.1</b>×植入方位<span class="muted">(垂直=1)</span><br>
-    <b>风险</b>　　logit = −31.00 + 2.892×ACD + 1.588×ICL尺寸 − 0.425×柱镜 − 1.327×植入方位　;　P(高) = 1 / (1 + e<span class="muted">^−logit</span>)
+    <div class="tabrow"><b>核心公式</b>　拱高(μm) = <span class="muted">−2056.2</span> + <b>284.8</b>×ACD + <b>138.8</b>×ICL尺寸 − <b>30.0</b>×柱镜 − <b>127.1</b>×植入方位<span class="muted">(垂直=1)</span></div>
+    <div class="tabrow"><b>扩展公式</b>　拱高(μm) = <span class="muted">−1812.1</span> + <b>332.2</b>×ACD + <b>343.4</b>×ICL尺寸 − <b>28.3</b>×柱镜 − <b>110.6</b>×植入方位 − <b>147.7</b>×STS_eff − <b>107.3</b>×WTW</div>
+    <div class="tabrow"><b>风险(核心)</b>　logit = −31.00 + 2.892×ACD + 1.588×ICL − 0.425×柱镜 − 1.327×方位　;　P = 1/(1+e<span class="muted">^−logit</span>)</div>
   </div>
 
-  <p class="disc">
-    <strong>用途与限制。</strong>本工具依据单中心 397 眼回顾性数据拟合的经验公式，输出为术后早期 OCT 拱高的<strong>群体平均估计</strong>，用于术前风险分层与尺寸取舍参考，<strong>不能替代术者判断</strong>。单眼点预测存在不确定性（MAE≈150 μm，一致性界限较宽）；跨设备/随访时点使用前应做外部校准。改变<strong>植入方位</strong>可作为调节拱高的手术手段（垂直较水平约低 127 μm）。柱镜按“非散光 = 0”编码。超出研究变量分布范围（ACD≈2.8–3.8 mm、ICL 12.1–13.7 mm、cyl 0~−6 D）时外推需谨慎。数值与方法详见配套论文《基于术前眼前节生物测量与人工晶体参数的 ICL 植入术后拱高机器学习预测模型》。
-  </p>
-
+  <div class="disc">
+    <strong>用途与限制。</strong>本工具依据单中心 397 眼回顾性数据拟合的经验公式，输出为术后<strong>早期 OCT 拱高</strong>的群体平均估计，用于术前风险分层、尺寸与方位取舍参考，<strong>不能替代术者判断</strong>。单眼点预测不确定性较大（核心 MAE≈150、扩展≈152 μm；一致性界限较宽）。<strong>扩展公式</strong>纳入沟到沟(STS_eff)与白到白(WTW)后 R² 由 0.32 升至 0.34（增量有限，因这些参数与 ACD/ICL 高度相关）。改变<strong>植入方位</strong>可作为调节拱高的手术手段（垂直较水平约低 127 μm）。柱镜按“非散光 = 0”编码；早期拱高随随访回落（1 月约 −230 μm），跨设备/时点使用前应外部校准。超出研究分布（ACD≈2.8–3.8、ICL 12.1–13.7、cyl 0~−6、WTW 10.8–12.6、STS 10.8–13.2）时外推需谨慎。病历识别为启发式文本匹配，务必人工核对识别结果。
+  </div>
 </div>
 
 <script>
 (function(){
-  // exact coefficients (from formula_results.json)
-  var B={i:-2056.2495, acd:284.7607, icl:138.7733, cyl:-30.0215, vert:-127.1224};
-  var L={i:-31.0030, acd:2.8923, icl:1.5878, cyl:-0.4253, vert:-1.3268};
-  var MAE=150, SCALE_MAX=1300;
-
-  var acd=document.getElementById('acd'), cyl=document.getElementById('cyl');
-  var iclSeg=document.getElementById('iclSeg');
-  var iclValue=13.2;
-  var orientValue=0;  // 0=horizontal, 1=vertical
+  "use strict";
+  // ---- coefficients ----
+  var Bc={i:-2056.2495, acd:284.7607, icl:138.7733, cyl:-30.0215, vert:-127.1224};
+  var Lc={i:-31.0030,    acd:2.8923,   icl:1.5878,   cyl:-0.4253,  vert:-1.3268};
+  var Be={i:-1812.14, acd:332.20, icl:343.41, cyl:-28.32, vert:-110.55, stseff:-147.70, wtw:-107.34};
+  var Le={i:-29.846,  acd:3.3937, icl:3.6985, cyl:-0.4223, vert:-1.0349, stseff:-1.8128, wtw:-0.7037};
+  var MAE_C=150, MAE_E=152, SCALE_MAX=1300;
+  var ICL_SIZES=[12.1,12.6,13.2,13.7];
 
   var el=function(id){return document.getElementById(id);};
   function clampPct(x){return Math.max(0,Math.min(100,x));}
   function pos(v){return clampPct(v/SCALE_MAX*100);}
+  var state={acd:3.20, icl:13.2, cyl:0, vert:0, wtw:11.58, sth:11.76, stv:12.21, ext:false};
 
+  function stsEff(){ // elliptical interp not needed here (binary orientation); use axis-matched
+    return state.vert? state.stv : state.sth;
+  }
+  function vaultOf(o){ // o overrides state fields
+    var a=('acd'in o)?o.acd:state.acd, i=('icl'in o)?o.icl:state.icl,
+        c=('cyl'in o)?o.cyl:state.cyl, v=('vert'in o)?o.vert:state.vert,
+        se=('stseff'in o)?o.stseff:stsEff(), w=('wtw'in o)?o.wtw:state.wtw,
+        ext=('ext'in o)?o.ext:state.ext;
+    if(ext) return Be.i+Be.acd*a+Be.icl*i+Be.cyl*c+Be.vert*v+Be.stseff*se+Be.wtw*w;
+    return Bc.i+Bc.acd*a+Bc.icl*i+Bc.cyl*c+Bc.vert*v;
+  }
+  function pHighOf(o){
+    var a=('acd'in o)?o.acd:state.acd, i=('icl'in o)?o.icl:state.icl,
+        c=('cyl'in o)?o.cyl:state.cyl, v=('vert'in o)?o.vert:state.vert,
+        se=('stseff'in o)?o.stseff:stsEff(), w=('wtw'in o)?o.wtw:state.wtw,
+        ext=('ext'in o)?o.ext:state.ext, z;
+    if(ext) z=Le.i+Le.acd*a+Le.icl*i+Le.cyl*c+Le.vert*v+Le.stseff*se+Le.wtw*w;
+    else z=Lc.i+Lc.acd*a+Lc.icl*i+Lc.cyl*c+Lc.vert*v;
+    return 1/(1+Math.exp(-z));
+  }
   function classify(v){
     if(v<250) return {t:'低拱高', c:'var(--low)'};
     if(v<=750) return {t:'理想', c:'var(--optimal)'};
     return {t:'高拱高', c:'var(--high)'};
   }
 
-  function contribRows(a,i,c,sv){
-    var base=B.i, cA=B.acd*a, cI=B.icl*i, cC=B.cyl*c, cV=B.vert*sv, sum=base+cA+cI+cC+cV;
-    var items=[
-      {n:'基线',    v:base, cls:'base'},
-      {n:'ACD',     v:cA,   cls:cA>=0?'pos':'neg'},
-      {n:'ICL 尺寸', v:cI,   cls:cI>=0?'pos':'neg'},
-      {n:'柱镜',    v:cC,   cls:cC>=0?'pos':'neg'},
-      {n:'植入方位', v:cV,   cls:cV>=0?'pos':'neg'}
-    ];
-    // scale bars against max abs contribution (excluding baseline offset feel)
-    var maxAbs=Math.max(Math.abs(base),Math.abs(cA),Math.abs(cI),Math.abs(cC),Math.abs(cV),1);
+  function contribRows(){
+    var a=state.acd,i=state.icl,c=state.cyl,v=state.vert,se=stsEff(),w=state.wtw;
+    var items;
+    if(state.ext){
+      var b=Be, sum=b.i+b.acd*a+b.icl*i+b.cyl*c+b.vert*v+b.stseff*se+b.wtw*w;
+      items=[{n:'基线',v:b.i,cls:'base'},{n:'ACD',v:b.acd*a},{n:'ICL 尺寸',v:b.icl*i},
+        {n:'柱镜',v:b.cyl*c},{n:'植入方位',v:b.vert*v},{n:'STS_eff',v:b.stseff*se},{n:'WTW',v:b.wtw*w}];
+      renderContrib(items,sum);
+    } else {
+      var bc=Bc, s2=bc.i+bc.acd*a+bc.icl*i+bc.cyl*c+bc.vert*v;
+      items=[{n:'基线',v:bc.i,cls:'base'},{n:'ACD',v:bc.acd*a},{n:'ICL 尺寸',v:bc.icl*i},
+        {n:'柱镜',v:bc.cyl*c},{n:'植入方位',v:bc.vert*v}];
+      renderContrib(items,s2);
+    }
+  }
+  function renderContrib(items,sum){
+    var maxAbs=1; items.forEach(function(it){maxAbs=Math.max(maxAbs,Math.abs(it.v));});
     var html='';
     items.forEach(function(it){
-      var w=Math.abs(it.v)/maxAbs*48; // up to 48% of half-track
-      var left = it.v>=0 ? 50 : (50-w);
+      var cls=it.cls||(it.v>=0?'pos':'neg'); var w=Math.abs(it.v)/maxAbs*48;
+      var left=it.v>=0?50:(50-w);
       html+='<div class="crow"><div class="cn">'+it.n+'</div>'+
         '<div class="cbar-track"><div class="cbar-mid"></div>'+
-        '<div class="cbar '+it.cls+'" style="left:'+left+'%;width:'+w+'%"></div></div>'+
+        '<div class="cbar '+cls+'" style="left:'+left+'%;width:'+w+'%"></div></div>'+
         '<div class="cval">'+(it.v>=0?'+':'')+Math.round(it.v)+'</div></div>';
     });
-    html+='<div class="crow csum"><div class="cn">预测拱高</div>'+
-      '<div></div><div class="cval" style="color:var(--ink)">'+Math.round(sum)+' μm</div></div>';
+    html+='<div class="crow csum"><div class="cn">预测拱高</div><div></div>'+
+      '<div class="cval" style="color:var(--ink)">'+Math.round(sum)+' μm</div></div>';
     el('crows').innerHTML=html;
   }
 
   function updateEye(v){
-    // map vault 0..1250 -> pixel gap 6..58 ; lens top ~ y=118 baseline, ICL peak rises
     var gap=Math.max(6,Math.min(58, 6 + v/1250*52));
-    var lensTopY=118;               // approx apex of lens dome in svg coords
-    var iclPeak=lensTopY-gap;       // ICL apex y (smaller = higher)
-    el('icl').setAttribute('d','M150 118 Q230 '+ (iclPeak-8).toFixed(1) +' 310 118');
+    var lensTopY=118, iclPeak=lensTopY-gap;
+    el('icl').setAttribute('d','M150 118 Q230 '+(iclPeak-8).toFixed(1)+' 310 118');
     el('vLine').setAttribute('y1',(iclPeak-2).toFixed(1));
     el('vTop').setAttribute('y1',(iclPeak-2).toFixed(1));
     el('vTop').setAttribute('y2',(iclPeak-2).toFixed(1));
-    var tagY=((iclPeak-2)+lensTopY)/2+4;
-    el('vTag').setAttribute('y',tagY.toFixed(1));
+    el('vTag').setAttribute('y',(((iclPeak-2)+lensTopY)/2+4).toFixed(1));
     el('vTag').textContent=Math.round(v)+' μm';
   }
 
-  function rangeCheck(a,i,c){
-    var msgs=[];
-    if(a<2.8||a>3.8) msgs.push('ACD 超出研究范围');
-    if(c<-6) msgs.push('柱镜超出范围');
-    el('rangeNote').textContent = msgs.length? ('⚠ '+msgs.join('，')+'，外推需谨慎') : '';
+  function rangeCheck(){
+    var m=[];
+    if(state.acd<2.8||state.acd>3.8) m.push('ACD 超范围');
+    if(state.icl<12.1||state.icl>13.7) m.push('ICL 超范围');
+    if(state.cyl<-6) m.push('柱镜超范围');
+    if(state.ext){ if(state.wtw<10.8||state.wtw>12.6) m.push('WTW 超范围');
+      if(stsEff()<10.8||stsEff()>13.2) m.push('STS 超范围'); }
+    // reuse orientation note area is separate; show in modeSub if needed
+    el('rangeWarn').textContent = m.length? ('⚠ '+m.join('，')+'，外推需谨慎'):'';
   }
+
+  function syncEffField(){ el('stEff').value=stsEff().toFixed(2); }
 
   function compute(){
-    var a=parseFloat(acd.value), i=iclValue, c=parseFloat(cyl.value), sv=orientValue;
-    el('acdVal').textContent=a.toFixed(2);
-    el('cylVal').textContent=c.toFixed(2);
-    el('iclVal').textContent=i.toFixed(1);
-
-    var v=B.i + B.acd*a + B.icl*i + B.cyl*c + B.vert*sv;
-    var vShown=Math.round(v);
-    el('vault').textContent=vShown;
-
-    var cl=classify(v);
-    var chip=el('classChip');
-    chip.textContent=cl.t; chip.style.background=cl.c;
-
-    // meter
+    var v=vaultOf({}), p=pHighOf({});
+    el('vault').textContent=Math.round(v);
+    var cl=classify(v); var chip=el('classChip'); chip.textContent=cl.t; chip.style.background=cl.c;
+    var mae=state.ext?MAE_E:MAE_C;
     el('needle').style.left=pos(v)+'%';
-    var lo=pos(v-MAE), hi=pos(v+MAE);
-    var band=el('band'); band.style.left=lo+'%'; band.style.width=Math.max(0,hi-lo)+'%';
-
-    // probability
-    var z=L.i + L.acd*a + L.icl*i + L.cyl*c + L.vert*sv;
-    var p=1/(1+Math.exp(-z));
-    el('pHigh').textContent=Math.round(p*100)+'%';
-    el('pFill').style.width=clampPct(p*100)+'%';
-    el('pHigh').style.color = p>0.5? 'var(--high)' : (p>0.25?'var(--ink)':'var(--optimal)');
-
-    updateEye(v);
-    contribRows(a,i,c,sv);
-    rangeCheck(a,i,c);
+    var lo=pos(v-mae), hi=pos(v+mae); el('band').style.left=lo+'%'; el('band').style.width=Math.max(0,hi-lo)+'%';
+    el('pHigh').textContent=Math.round(p*100)+'%'; el('pFill').style.width=clampPct(p*100)+'%';
+    el('pHigh').style.color = p>0.5?'var(--high)':(p>0.25?'var(--ink)':'var(--optimal)');
+    el('modeSub').innerHTML=(state.ext?'扩展公式 · ±MAE 152 μm':'核心公式 · ±MAE 150 μm')+' <span id="rangeWarn" style="color:var(--high)"></span>';
+    el('modeTag').textContent=state.ext?'扩展公式 R²=0.34':'核心公式 R²=0.32';
+    updateEye(v); contribRows(); syncEffField(); rangeCheck();
+    buildSizeTable();
   }
 
-  acd.addEventListener('input',compute);
-  cyl.addEventListener('input',compute);
-  el('cylZero').addEventListener('click',function(){cyl.value=0;compute();});
-  iclSeg.addEventListener('click',function(e){
+  // ---- input wiring: slider <-> numbox ----
+  function pair(sliderId,boxId,key,dec){
+    var sl=el(sliderId), bx=el(boxId);
+    function fromSlider(){ state[key]=parseFloat(sl.value); if(bx) bx.value=state[key].toFixed(dec); compute(); }
+    function fromBox(){ var x=parseFloat(bx.value); if(isNaN(x)) return; state[key]=x; if(sl){sl.value=x;} compute(); }
+    if(sl) sl.addEventListener('input',fromSlider);
+    if(bx) bx.addEventListener('input',fromBox);
+  }
+  pair('acd','acdN','acd',2);
+  pair('cyl','cylN','cyl',2);
+  // ICL: segmented + custom box
+  el('iclSeg').addEventListener('click',function(e){
     var b=e.target.closest('button'); if(!b) return;
-    [].forEach.call(iclSeg.children,function(x){x.classList.remove('on');});
-    b.classList.add('on'); iclValue=parseFloat(b.dataset.v); compute();
+    [].forEach.call(el('iclSeg').children,function(x){x.classList.remove('on');});
+    b.classList.add('on'); state.icl=parseFloat(b.dataset.v); el('iclN').value=state.icl.toFixed(1); compute();
   });
-  var orientSeg=document.getElementById('orientSeg');
-  orientSeg.addEventListener('click',function(e){
-    var b=e.target.closest('button'); if(!b) return;
-    [].forEach.call(orientSeg.children,function(x){x.classList.remove('on');});
-    b.classList.add('on'); orientValue=parseInt(b.dataset.v,10);
-    document.getElementById('orientVal').textContent = orientValue? '垂直':'水平';
+  el('iclN').addEventListener('input',function(){
+    var x=parseFloat(this.value); if(isNaN(x)) return; state.icl=x;
+    [].forEach.call(el('iclSeg').children,function(b){b.classList.toggle('on',parseFloat(b.dataset.v)===x);});
     compute();
   });
+  el('cylZero').addEventListener('click',function(){state.cyl=0; el('cyl').value=0; el('cylN').value='0.00'; compute();});
+  el('orientSeg').addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b) return;
+    [].forEach.call(el('orientSeg').children,function(x){x.classList.remove('on');});
+    b.classList.add('on'); state.vert=parseInt(b.dataset.v,10); compute();
+  });
+  // advanced numeric fields
+  ['wtwN','sthN','stvN'].forEach(function(id){
+    el(id).addEventListener('input',function(){
+      var x=parseFloat(this.value);
+      if(id==='wtwN'&&!isNaN(x)) state.wtw=x;
+      if(id==='sthN'&&!isNaN(x)) state.sth=x;
+      if(id==='stvN'&&!isNaN(x)) state.stv=x;
+      compute();
+    });
+  });
+  el('useExt').addEventListener('change',function(){ state.ext=this.checked; compute(); });
+  // advanced collapse
+  el('advHead').addEventListener('click',function(){
+    this.classList.toggle('open'); el('advBody').classList.toggle('open');
+  });
+
+  // ---- inverse solver: ICL x orientation table ----
+  function buildSizeTable(){
+    var target=parseFloat(el('targetV').value)||500;
+    var rows='<tr><th>ICL 尺寸</th><th>水平 H</th><th>垂直 V</th></tr>';
+    var best={d:1e9,r:-1,c:-1}; var cells=[];
+    ICL_SIZES.forEach(function(sz,ri){
+      [0,1].forEach(function(or,ci){
+        var vv=vaultOf({icl:sz,vert:or});
+        cells.push({sz:sz,or:or,v:vv}); var d=Math.abs(vv-target);
+        if(d<best.d){best={d:d,r:ri,c:ci,v:vv,sz:sz,or:or};}
+      });
+    });
+    ICL_SIZES.forEach(function(sz,ri){
+      var h=cells[ri*2].v, v=cells[ri*2+1].v;
+      var hc=(best.r===ri&&best.c===0)?'best':''; var vc=(best.r===ri&&best.c===1)?'best':'';
+      rows+='<tr><td class="hd">'+sz.toFixed(1)+'</td>'+
+        '<td class="'+hc+'">'+Math.round(h)+'</td><td class="'+vc+'">'+Math.round(v)+'</td></tr>';
+    });
+    el('sizeTbl').innerHTML=rows;
+    return best;
+  }
+  el('targetV').addEventListener('input',function(){ buildSizeTable(); });
+
+  // ---- inverse solver: solve for one variable ----
+  function solveVar(){
+    var target=parseFloat(el('targetV').value); if(isNaN(target)){el('solveOut').textContent='请先填写目标拱高。';return;}
+    var vr=el('solveVar').value, ext=state.ext;
+    var B=ext?Be:Bc;
+    // vault = B.i + B.acd*acd + B.icl*icl + B.cyl*cyl + B.vert*vert [+ B.stseff*stseff + B.wtw*wtw]
+    var known={acd:state.acd,icl:state.icl,cyl:state.cyl,vert:state.vert,stseff:stsEff(),wtw:state.wtw};
+    // constant = target - sum(all known except the solve var * coef)
+    var coefMap={ICL_size:B.icl,ACD:B.acd,cyl:B.cyl,WTW:ext?B.wtw:0,STS_eff:ext?B.stseff:0};
+    if((vr==='WTW'||vr==='STS_eff')&&!ext){ el('solveOut').innerHTML='请先在“高级”中勾选<b>扩展公式</b>后再反解 '+ (vr==='WTW'?'WTW':'STS_eff')+'。'; return; }
+    var coef=coefMap[vr]; if(!coef){el('solveOut').textContent='该变量不可解。';return;}
+    // base = B.i + contributions of all known vars EXCEPT the target var
+    var base=B.i + B.acd*known.acd + B.icl*known.icl + B.cyl*known.cyl + B.vert*known.vert;
+    if(ext) base += B.stseff*known.stseff + B.wtw*known.wtw;
+    // subtract the current solve-var contribution to remove it
+    var keymap={ICL_size:'icl',ACD:'acd',cyl:'cyl',WTW:'wtw',STS_eff:'stseff'};
+    base -= coef*known[keymap[vr]];
+    var need=(target-base)/coef;
+    var label={ICL_size:'ICL 尺寸',ACD:'ACD',cyl:'柱镜 cyl',WTW:'白到白 WTW',STS_eff:'有效沟径 STS_eff'}[vr];
+    var unit=(vr==='cyl')?'D':'mm';
+    var out='要达到目标拱高 <b>'+Math.round(target)+' μm</b>，在其余参数不变时需 <b>'+label+' ≈ '+need.toFixed(vr==='ICL_size'?2:2)+' '+unit+'</b>。';
+    if(vr==='ICL_size'){
+      // snap to nearest available
+      var nearest=ICL_SIZES.reduce(function(a,b){return Math.abs(b-need)<Math.abs(a-need)?b:a;});
+      var vAt=vaultOf({icl:nearest});
+      out+='<br>最接近的可用尺寸 <b>'+nearest.toFixed(1)+' mm</b> → 预测拱高 <b>'+Math.round(vAt)+' μm</b>。';
+      if(need<12.0||need>13.9) out+='<br><span style="color:#E0A94A">（解值超出常规尺寸范围，目标在当前解剖下可能不可达，可考虑改变植入方位）</span>';
+    } else {
+      var lo={ACD:2.8,WTW:10.8,STS_eff:10.8,cyl:-6}[vr], hi={ACD:3.8,WTW:12.6,STS_eff:13.2,cyl:0}[vr];
+      if(need<lo||need>hi) out+='<br><span style="color:#E0A94A">（解值超出研究/生理常见范围 '+lo+'–'+hi+'，仅供参考；该参数多为患者解剖、不可术中改变）</span>';
+      if(vr==='ACD'||vr==='WTW'||vr==='STS_eff') out+='<br><span style="color:var(--muted)">注：'+label+'为患者解剖参数，通常不可选择；如需调节拱高，实际可控者为 ICL 尺寸与植入方位。</span>';
+    }
+    el('solveOut').innerHTML=out;
+  }
+  el('solveBtn').addEventListener('click',solveVar);
+
+  // ---- medical record parser ----
+  function num(re,txt){ var m=txt.match(re); return m?parseFloat(m[1]):null; }
+  function parseRecord(){
+    var t=el('recTxt').value; if(!t.trim()){el('recMsg').textContent='请先粘贴病历文本。';return;}
+    var T=t.replace(/：/g,':').replace(/，/g,',').replace(/[（(]/g,'(').replace(/[)）]/g,')');
+    var got=[];
+    // ACD
+    var acd=num(/(?:ACD|前房深度|前房深)\s*[:=]?\s*(\d\.\d{1,2})/i,T);
+    if(acd&&acd>=2.4&&acd<=4.5){ state.acd=acd; el('acd').value=acd; el('acdN').value=acd.toFixed(2); got.push('ACD='+acd); }
+    // cyl (柱镜/散光, negative)
+    var cyl=num(/(?:柱镜|散光|cyl|CYL)\s*[:=]?\s*(-?\d\.?\d{0,2})/i,T);
+    if(cyl!==null){ cyl=-Math.abs(cyl); if(cyl>=-6&&cyl<=0){ state.cyl=cyl; el('cyl').value=cyl; el('cylN').value=cyl.toFixed(2); got.push('cyl='+cyl); } }
+    // ICL size
+    var icl=num(/(?:ICL[^0-9]{0,6}(?:尺寸|整长|size)?|人工晶体[^0-9]{0,4}尺寸?)\s*[:=]?\s*(1[23]\.\d)/i,T);
+    if(!icl){ var m2=T.match(/\b(12\.1|12\.6|13\.2|13\.7)\b/); if(m2) icl=parseFloat(m2[1]); }
+    if(icl&&icl>=11.5&&icl<=14){ state.icl=icl; el('iclN').value=icl.toFixed(1);
+      [].forEach.call(el('iclSeg').children,function(b){b.classList.toggle('on',parseFloat(b.dataset.v)===icl);}); got.push('ICL='+icl); }
+    // WTW
+    var wtw=num(/(?:WTW|白到白|角膜横径|水平角膜)\s*[:=]?\s*(1[01]\.\d{1,2})/i,T);
+    if(wtw&&wtw>=10&&wtw<=13){ state.wtw=wtw; el('wtwN').value=wtw.toFixed(2); got.push('WTW='+wtw); }
+    // STS h/v : patterns like 沟到沟 11.5/12.3  or STS 11.5,12.3
+    var stsPair=T.match(/(?:STS|沟到沟|沟径|睫状沟)\D{0,4}(1[0-3]\.\d{1,2})\s*[\/,xX×]\s*(1[0-3]\.\d{1,2})/i);
+    if(stsPair){ var h=parseFloat(stsPair[1]),v=parseFloat(stsPair[2]);
+      state.sth=h; state.stv=v; el('sthN').value=h.toFixed(2); el('stvN').value=v.toFixed(2); got.push('STS='+h+'/'+v); }
+    // orientation
+    var vert=null;
+    if(/垂直|竖直|6\s*[-~]\s*12|12\s*[-~]\s*6/.test(T)) vert=1;
+    else if(/水平|横向|3\s*[-~]\s*9|9\s*[-~]\s*3/.test(T)) vert=0;
+    if(vert!==null){ state.vert=vert;
+      [].forEach.call(el('orientSeg').children,function(b){b.classList.toggle('on',parseInt(b.dataset.v,10)===vert);});
+      got.push('方位='+(vert?'垂直':'水平')); }
+    // auto-enable extended if STS or WTW found
+    if((stsPair||wtw)&&!state.ext){ state.ext=true; el('useExt').checked=true;
+      el('advHead').classList.add('open'); el('advBody').classList.add('open'); }
+    compute();
+    el('recMsg').innerHTML = got.length? ('✓ 已识别并填入：'+got.join('、')+'。<span style="color:var(--high)">请务必人工核对。</span>')
+      : '未能识别到可用参数——请检查文本格式（可用 “ACD 3.2，WTW 11.6，沟到沟 11.5/12.3，柱镜 -1.25，ICL 12.6，垂直” 之类写法）。';
+  }
+  el('recBtn').addEventListener('click',parseRecord);
+  el('recClear').addEventListener('click',function(){el('recTxt').value=''; el('recMsg').textContent='';});
 
   compute();
 })();
