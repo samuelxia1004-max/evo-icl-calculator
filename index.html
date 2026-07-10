@@ -3,611 +3,349 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ICL 拱高预测计算器 · Vault Predictor</title>
+<meta name="description" content="Research-only ICL one-month vault predictor with local OCR-assisted report extraction.">
+<title>ICL术后拱高预测</title>
 <style>
   :root{
     --ink:#10262B; --paper:#E9EEED; --panel:#FBFCFC; --panel-2:#F3F6F5;
-    --petrol:#0E5A63; --petrol-deep:#0A3D44;
-    --optimal:#2F8F7D; --high:#C6851C; --low:#B85570;
+    --petrol:#0E5A63; --petrol-deep:#0A3D44; --petrol-soft:#DCE9E7;
+    --optimal:#2F8F7D; --high:#C6851C; --low:#B85570; --info:#477A9C;
     --line:#C7D5D3; --line-soft:#DCE6E4; --muted:#5C7377;
     --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code",Consolas,monospace;
     --sans:system-ui,-apple-system,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;
   }
   *{box-sizing:border-box}
   html,body{margin:0}
-  body{
-    background:
-      radial-gradient(1200px 500px at 85% -10%, #DDE7E5 0%, rgba(221,231,229,0) 60%),
-      var(--paper);
-    color:var(--ink); font-family:var(--sans); line-height:1.5;
-    -webkit-font-smoothing:antialiased; padding:28px 20px 56px;
-  }
-  .wrap{max-width:1060px; margin:0 auto}
-  header{display:flex; flex-wrap:wrap; align-items:flex-end; gap:14px 22px;
-    padding-bottom:16px; border-bottom:1px solid var(--line); margin-bottom:22px}
-  .mark{display:flex; align-items:center; gap:12px}
-  h1{font-size:22px; margin:0; font-weight:650; letter-spacing:.2px}
-  h1 .en{display:block; font-size:12px; font-weight:500; color:var(--muted);
-    letter-spacing:1.6px; text-transform:uppercase; margin-top:3px}
-  .prov{margin-left:auto; display:flex; gap:8px; flex-wrap:wrap}
-  .tag{font-family:var(--mono); font-size:11px; color:var(--petrol-deep);
-    background:#DCE9E7; border:1px solid #BFD5D1; border-radius:2px; padding:3px 8px}
-  .grid{display:grid; grid-template-columns:minmax(300px,0.95fr) 1.05fr; gap:18px; align-items:stretch}
-  @media(max-width:820px){.grid{grid-template-columns:1fr}}
-  .card{background:var(--panel); border:1px solid var(--line-soft); border-radius:6px; padding:20px}
-  .card h2{font-size:11px; letter-spacing:1.8px; text-transform:uppercase;
-    color:var(--muted); margin:0 0 16px; font-weight:600; display:flex; justify-content:space-between; align-items:center}
-  .field{margin-bottom:18px}
-  .field:last-child{margin-bottom:0}
-  .flabel{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:7px}
-  .flabel .name{font-size:14px; font-weight:600}
-  .flabel .name span{color:var(--muted); font-weight:400; font-size:12px}
-  .inrow{display:flex; align-items:center; gap:10px}
-  .inrow input[type=range]{flex:1}
-  input[type=range]{-webkit-appearance:none; appearance:none; width:100%; height:4px;
-    background:var(--line); border-radius:4px; outline:none; margin:6px 0}
-  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; appearance:none;
-    width:18px; height:18px; border-radius:50%; background:var(--petrol);
-    border:3px solid #fff; box-shadow:0 1px 3px rgba(10,61,68,.4); cursor:pointer}
-  input[type=range]::-moz-range-thumb{width:16px; height:16px; border-radius:50%;
-    background:var(--petrol); border:3px solid #fff; cursor:pointer}
-  .numbox{width:76px; font-family:var(--mono); font-size:15px; font-weight:600; color:var(--petrol-deep);
-    text-align:right; padding:6px 8px; border:1px solid var(--line); border-radius:4px; background:#fff}
-  .numbox:focus{outline:none; border-color:var(--petrol); box-shadow:0 0 0 2px rgba(14,90,99,.12)}
-  .numbox.wide{width:100%}
-  .rangecap{display:flex; justify-content:space-between; font-family:var(--mono);
-    font-size:10px; color:var(--muted); margin-top:2px}
-  .seg{display:grid; grid-template-columns:repeat(4,1fr); gap:6px}
-  .seg.two{grid-template-columns:repeat(2,1fr)}
-  .seg button{font-family:var(--mono); font-size:14px; padding:9px 0; cursor:pointer;
-    background:var(--panel-2); border:1px solid var(--line); border-radius:4px; color:var(--ink); transition:all .12s}
-  .seg button:hover{border-color:var(--petrol)}
-  .seg button.on{background:var(--petrol); color:#fff; border-color:var(--petrol)}
-  .chip-btn{font-size:11px; font-family:var(--mono); white-space:nowrap; cursor:pointer;
-    background:none; border:1px solid var(--line); border-radius:3px; padding:5px 8px; color:var(--muted)}
-  .chip-btn:hover{border-color:var(--petrol); color:var(--petrol-deep)}
-  .note-x{font-size:11px; color:var(--high); margin-top:8px; min-height:14px; font-weight:500}
-  /* advanced / collapsible */
-  .adv{margin-top:16px; border-top:1px dashed var(--line); padding-top:14px}
-  .adv-head{display:flex; align-items:center; gap:10px; cursor:pointer; user-select:none}
-  .adv-head .chev{font-family:var(--mono); color:var(--muted); transition:transform .2s}
-  .adv-head.open .chev{transform:rotate(90deg)}
-  .adv-head .t{font-size:13px; font-weight:650; color:var(--petrol-deep)}
-  .adv-head .st{font-size:11px; color:var(--muted); margin-left:auto}
-  .adv-body{display:none; margin-top:14px}
-  .adv-body.open{display:block}
-  .switch{display:flex; align-items:center; gap:8px; font-size:12px; color:var(--muted); margin-bottom:14px}
-  .switch input{width:16px; height:16px; accent-color:var(--petrol)}
-  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
-  /* record parser */
-  .rec{margin-top:16px; border-top:1px dashed var(--line); padding-top:14px}
-  .rec textarea{width:100%; min-height:70px; font-family:var(--mono); font-size:12px; padding:8px;
-    border:1px solid var(--line); border-radius:4px; resize:vertical; background:#fff; color:var(--ink)}
-  .rec textarea:focus{outline:none; border-color:var(--petrol)}
-  .btn{font-family:var(--sans); font-size:13px; font-weight:600; cursor:pointer; padding:8px 14px;
-    background:var(--petrol); color:#fff; border:1px solid var(--petrol); border-radius:4px; transition:all .12s}
-  .btn:hover{background:var(--petrol-deep)}
-  .btn.ghost{background:none; color:var(--petrol-deep); border-color:var(--line)}
-  .btn.ghost:hover{border-color:var(--petrol)}
-  .recmsg{font-size:11.5px; color:var(--optimal); margin-top:8px; min-height:14px; line-height:1.5}
-  /* result */
-  .readout{display:flex; align-items:baseline; gap:14px; flex-wrap:wrap}
-  .bignum{font-family:var(--mono); font-size:56px; font-weight:650; line-height:.95; color:var(--ink); font-variant-numeric:tabular-nums}
-  .bignum .u{font-size:20px; color:var(--muted); font-weight:500; margin-left:4px}
-  .classchip{font-size:13px; font-weight:650; padding:5px 12px; border-radius:3px; color:#fff; letter-spacing:.3px}
-  .sub{font-family:var(--mono); font-size:12px; color:var(--muted); margin-top:6px}
-  .meter-wrap{margin:20px 0 6px}
-  .meter{position:relative; height:34px; border-radius:4px; overflow:hidden; display:flex; border:1px solid var(--line)}
-  .zone{height:100%; display:flex; align-items:center; justify-content:center;
-    font-family:var(--mono); font-size:10px; color:#fff; letter-spacing:.5px; opacity:.92}
-  .z-low{background:var(--low)} .z-opt{background:var(--optimal)} .z-high{background:var(--high)}
-  .band{position:absolute; top:0; height:100%; background:rgba(16,38,43,.16);
-    border-left:1px dashed rgba(16,38,43,.4); border-right:1px dashed rgba(16,38,43,.4);
-    transition:left .35s cubic-bezier(.4,0,.2,1), width .35s cubic-bezier(.4,0,.2,1)}
-  .needle{position:absolute; top:-6px; width:2px; height:46px; background:var(--ink); transition:left .35s cubic-bezier(.4,0,.2,1)}
-  .needle::before{content:""; position:absolute; top:-1px; left:-4px; width:0; height:0;
-    border-left:5px solid transparent; border-right:5px solid transparent; border-top:7px solid var(--ink)}
-  .ticks{display:flex; justify-content:space-between; font-family:var(--mono); font-size:10px; color:var(--muted); margin-top:5px}
-  .schematic{margin-top:18px; background:var(--panel-2); border:1px solid var(--line-soft); border-radius:5px; padding:14px 14px 8px}
-  .schematic .cap{font-family:var(--mono); font-size:10px; color:var(--muted); display:flex; justify-content:space-between; margin-top:4px}
-  .prob{display:flex; align-items:center; gap:14px; margin-top:18px; padding-top:16px; border-top:1px solid var(--line-soft)}
-  .prob .pnum{font-family:var(--mono); font-size:30px; font-weight:650; font-variant-numeric:tabular-nums}
-  .prob .plabel{font-size:12px; color:var(--muted); line-height:1.35}
-  .pbar{flex:1; height:8px; background:var(--line); border-radius:6px; overflow:hidden; min-width:80px}
-  .pfill{height:100%; background:linear-gradient(90deg,var(--optimal),var(--high)); transition:width .35s}
-  .contrib{margin-top:18px}
-  .crow{display:grid; grid-template-columns:92px 1fr 70px; align-items:center; gap:10px; padding:4px 0; font-size:13px}
-  .crow .cn{color:var(--ink)}
-  .cbar-track{position:relative; height:15px; background:var(--panel-2); border-radius:3px; border:1px solid var(--line-soft)}
-  .cbar-mid{position:absolute; left:50%; top:-3px; bottom:-3px; width:1px; background:var(--line)}
-  .cbar{position:absolute; top:2px; height:11px; border-radius:2px; transition:all .3s}
-  .cbar.pos{background:var(--optimal)} .cbar.neg{background:var(--low)} .cbar.base{background:#7C9A9E}
-  .cval{font-family:var(--mono); font-size:12px; text-align:right; color:var(--petrol-deep)}
-  .csum{border-top:1px solid var(--line); margin-top:6px; padding-top:8px; font-weight:650}
-  /* inverse solver */
-  .solver{margin-top:18px; background:var(--panel); border:1px solid var(--line-soft); border-radius:6px; padding:20px}
-  .solver h2{font-size:11px; letter-spacing:1.8px; text-transform:uppercase; color:var(--muted); margin:0 0 6px; font-weight:600}
-  .solver .lead{font-size:12.5px; color:var(--muted); margin:0 0 16px}
-  .sgrid{display:grid; grid-template-columns:1fr 1fr; gap:18px}
-  @media(max-width:820px){.sgrid{grid-template-columns:1fr}}
-  .stbl{width:100%; border-collapse:collapse; font-size:13px; margin-top:8px}
-  .stbl th,.stbl td{border:1px solid var(--line-soft); padding:7px 9px; text-align:center; font-family:var(--mono)}
-  .stbl th{background:#EDF3F2; color:var(--muted); font-weight:600; font-size:11px}
-  .stbl td.best{background:#DCEFE9; font-weight:700; color:var(--petrol-deep); outline:2px solid var(--optimal)}
-  .stbl td.hd{background:#F3F6F5; font-weight:600; color:var(--ink)}
-  .solrow{display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap}
-  .solrow label{font-size:13px; font-weight:600; min-width:88px}
-  select.sel{font-family:var(--sans); font-size:13px; padding:7px 8px; border:1px solid var(--line); border-radius:4px; background:#fff; color:var(--ink)}
-  .solout{background:var(--ink); color:#DCE9E7; border-radius:5px; padding:12px 14px; font-family:var(--mono);
-    font-size:13px; line-height:1.6; margin-top:10px; min-height:20px}
-  .solout b{color:#fff}
-  .eq{margin-top:22px; background:var(--ink); color:#DCE9E7; border-radius:6px; padding:16px 18px;
-    font-family:var(--mono); font-size:12.5px; line-height:1.7; overflow-x:auto}
-  .eq b{color:#fff} .eq .muted{color:#7FA0A3}
-  .eq .tabrow{margin:4px 0}
-  .disc{margin-top:14px; font-size:11.5px; color:var(--muted); line-height:1.6}
-  .disc strong{color:var(--ink)}
-  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+  body{background:radial-gradient(1200px 500px at 85% -10%,#DDE7E5 0%,rgba(221,231,229,0) 60%),var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.5;-webkit-font-smoothing:antialiased;padding:28px 20px 56px}
+  .wrap{max-width:1180px;margin:0 auto}
+  header{display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px 22px;padding-bottom:16px;border-bottom:1px solid var(--line);margin-bottom:22px}
+  .mark{display:flex;align-items:center;gap:12px}.mark svg{flex:none}
+  h1{font-size:23px;margin:0;font-weight:680;letter-spacing:.2px}h1 .en{display:block;font-size:11px;font-weight:500;color:var(--muted);letter-spacing:1.55px;text-transform:uppercase;margin-top:3px}
+  .prov{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}.tag{font-family:var(--mono);font-size:11px;color:var(--petrol-deep);background:#DCE9E7;border:1px solid #BFD5D1;border-radius:3px;padding:3px 8px}
+  .notice{width:100%;font-size:12px;color:#734c12;background:#fff8e9;border:1px solid #efd49d;border-radius:5px;padding:9px 11px}
+  .grid{display:grid;grid-template-columns:minmax(340px,.92fr) 1.08fr;gap:18px;align-items:stretch}@media(max-width:850px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line-soft);border-radius:7px;padding:20px;box-shadow:0 2px 12px rgba(16,38,43,.035)}
+  .card h2{font-size:11px;letter-spacing:1.8px;text-transform:uppercase;color:var(--muted);margin:0 0 16px;font-weight:650}
+  .section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:18px 0 10px;padding-top:15px;border-top:1px solid var(--line-soft)}
+  .section-title b{font-size:13px}.section-title span{font-size:11px;color:var(--muted)}
+  .field{margin-bottom:18px}.field:last-child{margin-bottom:0}
+  .flabel{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;gap:10px}.flabel .name{font-size:14px;font-weight:650}.flabel .name span{color:var(--muted);font-weight:400;font-size:11px}.val{font-family:var(--mono);font-size:15px;color:var(--petrol-deep);font-weight:650}
+  .dual{display:grid;grid-template-columns:1fr 86px;gap:10px;align-items:center}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;background:var(--line);border-radius:4px;outline:none;margin:6px 0}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;border-radius:50%;background:var(--petrol);border:3px solid #fff;box-shadow:0 1px 3px rgba(10,61,68,.4);cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--petrol);border:3px solid #fff;cursor:pointer}
+  input[type=number],select,textarea{width:100%;font:inherit;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:4px;padding:8px 9px;outline:none}input:focus,select:focus,textarea:focus{border-color:var(--petrol);box-shadow:0 0 0 2px rgba(14,90,99,.10)}
+  input[type=number]{font-family:var(--mono);text-align:right}.rangecap{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9.5px;color:var(--muted)}
+  .seg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.seg.two{grid-template-columns:repeat(2,1fr)}.seg button,.btn{font-family:var(--mono);font-size:12px;padding:9px 8px;cursor:pointer;background:var(--panel-2);border:1px solid var(--line);border-radius:4px;color:var(--ink);transition:all .12s}.seg button:hover,.btn:hover{border-color:var(--petrol)}.seg button.on,.btn.primary{background:var(--petrol);color:#fff;border-color:var(--petrol)}.btn.ghost{background:#fff}.btn.warnbtn{background:#fff8e9;border-color:#e7c985;color:#7b5215}.btn.danger{background:#fff;border-color:#dca8b6;color:#99425b}.btn:disabled{opacity:.5;cursor:not-allowed}
+  .quick{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}.quick button{font-size:10px;padding:4px 7px}
+  .note-x{font-size:11px;color:var(--high);margin-top:7px;min-height:14px;font-weight:520}.muted{color:var(--muted)}
+  details{border-top:1px solid var(--line-soft);margin-top:14px;padding-top:12px}summary{cursor:pointer;font-weight:650;font-size:13px;color:var(--petrol-deep)}.advanced-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px 12px;margin-top:12px}@media(max-width:520px){.advanced-grid{grid-template-columns:1fr}}
+  .mini label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:4px}.mini input,.mini select{padding:7px 8px}
+  .result{display:flex;flex-direction:column}.readout{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}.bignum{font-family:var(--mono);font-size:58px;font-weight:680;line-height:.95;color:var(--ink);font-variant-numeric:tabular-nums}.bignum .u{font-size:20px;color:var(--muted);font-weight:500;margin-left:4px}.classchip{font-size:13px;font-weight:650;padding:5px 12px;border-radius:3px;color:#fff;letter-spacing:.3px}.sub{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:7px}
+  .meter-wrap{margin:22px 0 6px}.meter{position:relative;height:34px;border-radius:4px;overflow:hidden;display:flex;border:1px solid var(--line)}.zone{height:100%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;color:#fff;letter-spacing:.5px;opacity:.92}.z-low{background:var(--low)}.z-opt{background:var(--optimal)}.z-high{background:var(--high)}.band{position:absolute;top:0;height:100%;background:rgba(16,38,43,.16);border-left:1px dashed rgba(16,38,43,.4);border-right:1px dashed rgba(16,38,43,.4);transition:left .25s,width .25s}.needle{position:absolute;top:-6px;width:2px;height:46px;background:var(--ink);transition:left .25s}.needle::before{content:"";position:absolute;top:-1px;left:-4px;width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid var(--ink)}.ticks{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:5px}
+  .schematic{margin-top:18px;background:var(--panel-2);border:1px solid var(--line-soft);border-radius:5px;padding:12px 14px 7px}.schematic .cap{font-family:var(--mono);font-size:9.5px;color:var(--muted);display:flex;justify-content:space-between;gap:10px;margin-top:2px}
+  .prob-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:16px;padding-top:15px;border-top:1px solid var(--line-soft)}.pbox{border:1px solid var(--line-soft);border-radius:5px;padding:9px;text-align:center;background:#fff}.pnum{font-family:var(--mono);font-size:23px;font-weight:680}.plabel{font-size:10px;color:var(--muted)}
+  .diag{margin-top:16px;border:1px solid var(--line-soft);border-radius:5px;padding:12px;background:#fff}.diag-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.diag-head b{font-size:13px}.diag-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.diag-cell{background:var(--panel-2);border-radius:4px;padding:8px}.diag-cell span{display:block;font-size:9.5px;color:var(--muted)}.diag-cell strong{font-family:var(--mono);font-size:14px}.diag-msg{font-size:11px;margin-top:8px;color:var(--muted)}
+  .contrib{margin-top:18px}.crow{display:grid;grid-template-columns:112px 1fr 78px;align-items:center;gap:10px;padding:5px 0;font-size:12px}.cbar-track{position:relative;height:16px;background:var(--panel-2);border-radius:3px;border:1px solid var(--line-soft)}.cbar-mid{position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--line)}.cbar{position:absolute;top:2px;height:12px;border-radius:2px;transition:all .3s}.cbar.pos{background:var(--optimal)}.cbar.neg{background:var(--low)}.cbar.base{background:#7C9A9E}.cval{font-family:var(--mono);font-size:11.5px;text-align:right;color:var(--petrol-deep)}.csum{border-top:1px solid var(--line);margin-top:6px;padding-top:8px;font-weight:650}
+  .table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:11.5px}th,td{padding:8px 7px;border-bottom:1px solid var(--line-soft);text-align:right;white-space:nowrap}th{color:var(--muted);font-weight:650;background:var(--panel-2);position:sticky;top:0}th:first-child,td:first-child{text-align:left}.selected-row{background:#e8f3f1}
+  .ocr-card{margin-top:18px}.ocr-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:16px}@media(max-width:850px){.ocr-grid{grid-template-columns:1fr}}.drop{border:1.5px dashed #9bb8b4;border-radius:6px;min-height:215px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:16px;background:#f7faf9;position:relative;overflow:hidden}.drop.drag{border-color:var(--petrol);background:#eaf3f1}.drop canvas{max-width:100%;max-height:300px;display:none}.drop .placeholder{font-size:12px;color:var(--muted)}.drop .placeholder b{display:block;color:var(--ink);font-size:14px;margin-bottom:5px}.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.progress{height:7px;background:var(--line-soft);border-radius:6px;overflow:hidden;margin-top:10px}.progress div{height:100%;width:0;background:var(--petrol);transition:width .2s}.status{font-size:11px;color:var(--muted);margin-top:6px;min-height:17px}.privacy{font-size:10.5px;color:var(--muted);margin-top:8px;padding:8px;background:#f4f7f6;border-left:3px solid var(--info)}
+  textarea{min-height:180px;font-family:var(--mono);font-size:11px;line-height:1.5;resize:vertical}.ocr-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}.candidate-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin:10px 0}.candidate-actions select{width:auto;min-width:160px}.candidate-table input{width:82px;padding:5px 6px;font-size:11px}.confidence{font-family:var(--mono);font-size:10px;color:var(--muted)}
+  .evidence{margin-top:18px}.evidence .legend{font-size:11px;color:var(--muted);margin-bottom:10px}.badge{display:inline-block;font-size:9.5px;font-weight:650;padding:2px 6px;border-radius:3px;color:#fff}.b-core{background:var(--optimal)}.b-context{background:var(--info)}.b-weak{background:#7c8c8f}.b-no{background:#a76d79}
+  .eq{margin-top:18px;background:var(--ink);color:#DCE9E7;border-radius:6px;padding:15px 18px;font-family:var(--mono);font-size:11.5px;line-height:1.75;overflow-x:auto}.eq b{color:#fff}.eq .muted2{color:#86a6a8}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}.disc{margin-top:14px;font-size:11px;color:var(--muted);line-height:1.65}.disc strong{color:var(--ink)}a{color:var(--petrol-deep)}
+  @media print{body{padding:0;background:#fff}.wrap{max-width:none}.ocr-card,.toolbar,.notice{display:none}.card{box-shadow:none;break-inside:avoid}details{display:none}}
+  @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
 <div class="wrap">
+<header>
+  <div class="mark">
+    <svg width="34" height="34" viewBox="0 0 34 34" fill="none" aria-hidden="true">
+      <circle cx="17" cy="17" r="15.5" stroke="#0E5A63" stroke-width="1.4"/>
+      <path d="M3.5 17c4.2-6 22.8-6 27 0-4.2 6-22.8 6-27 0Z" stroke="#0A3D44" stroke-width="1.4" fill="#DCE9E7"/>
+      <circle cx="17" cy="17" r="4.4" fill="#0E5A63"/>
+      <path d="M8 14.2c3.4-2.3 14.6-2.3 18 0" stroke="#C6851C" stroke-width="1.3" fill="none"/>
+    </svg>
+  </div>
+  <h1>ICL术后拱高预测</h1>
+</header>
 
-  <header>
-    <div class="mark">
-      <svg width="34" height="34" viewBox="0 0 34 34" fill="none" aria-hidden="true">
-        <circle cx="17" cy="17" r="15.5" stroke="#0E5A63" stroke-width="1.4"/>
-        <path d="M3.5 17c4.2-6 22.8-6 27 0-4.2 6-22.8 6-27 0Z" stroke="#0A3D44" stroke-width="1.4" fill="#DCE9E7"/>
-        <circle cx="17" cy="17" r="4.4" fill="#0E5A63"/>
-        <path d="M8 14.2c3.4-2.3 14.6-2.3 18 0" stroke="#C6851C" stroke-width="1.3" fill="none"/>
+<div class="grid">
+  <section class="card">
+    <h2>术前输入 · Preoperative inputs</h2>
+
+    <div class="field">
+      <div class="flabel"><span class="name">前房深度 ACD <span>· Pentacam / mm</span></span><span class="val" id="acdVal">3.20</span></div>
+      <div class="dual"><input type="range" id="acd" min="2.50" max="4.10" step="0.01" value="3.20"><input type="number" id="acdNum" min="2.50" max="4.10" step="0.01" value="3.20"></div>
+      <div class="rangecap"><span>2.50</span><span>队列 2.62–3.88</span><span>4.10</span></div>
+    </div>
+
+    <div class="field">
+      <div class="flabel"><span class="name">晶状体厚度 LT <span>· mm</span></span><span class="val" id="ltVal">3.63</span></div>
+      <div class="dual"><input type="range" id="lt" min="2.80" max="5.00" step="0.01" value="3.63"><input type="number" id="ltNum" min="2.80" max="5.00" step="0.01" value="3.63"></div>
+      <div class="rangecap"><span>2.80</span><span>队列 3.02–4.51</span><span>5.00</span></div>
+    </div>
+
+    <div class="field">
+      <div class="flabel"><span class="name">沟径来源 <span>· Sulcus source</span></span><span class="val" id="sourceVal">UBM 实测</span></div>
+      <div class="seg two" id="sourceSeg"><button data-v="measured" class="on">UBM 实测 STS</button><button data-v="estimated">由 WTW 估算</button></div>
+      <div class="note-x" id="sourceNote"></div>
+    </div>
+
+    <div class="field">
+      <div class="flabel"><span class="name">水平沟到沟 STS-H <span>· mm</span></span><span class="val" id="stshVal">11.80</span></div>
+      <div class="dual"><input type="range" id="stsh" min="10.00" max="13.60" step="0.01" value="11.80"><input type="number" id="stshNum" min="10.00" max="13.60" step="0.01" value="11.80"></div>
+      <div class="rangecap"><span>10.00</span><span>队列 10.40–13.14</span><span>13.60</span></div>
+    </div>
+
+    <div class="field">
+      <div class="flabel"><span class="name">垂直沟到沟 STS-V <span>· mm</span></span><span class="val" id="stsvVal">12.20</span></div>
+      <div class="dual"><input type="range" id="stsv" min="10.50" max="14.00" step="0.01" value="12.20"><input type="number" id="stsvNum" min="10.50" max="14.00" step="0.01" value="12.20"></div>
+      <div class="rangecap"><span>10.50</span><span>队列 11.06–13.66</span><span>14.00</span></div>
+    </div>
+
+    <div class="field">
+      <div class="flabel"><span class="name">白到白 WTW <span>· Pentacam / mm；诊断与缺失回退</span></span><span class="val" id="wtwVal">11.60</span></div>
+      <div class="dual"><input type="range" id="wtw" min="9.80" max="13.50" step="0.01" value="11.60"><input type="number" id="wtwNum" min="9.80" max="13.50" step="0.01" value="11.60"></div>
+      <div class="rangecap"><span>9.80</span><span>队列 10.40–13.10</span><span>13.50</span></div>
+    </div>
+
+    <div class="field">
+      <div class="flabel"><span class="name">计划 ICL 尺寸 <span>· mm</span></span><span class="val" id="iclVal">12.6</span></div>
+      <div class="seg" id="iclSeg"><button data-v="12.1">12.1</button><button data-v="12.6" class="on">12.6</button><button data-v="13.2">13.2</button><button data-v="13.7">13.7</button></div>
+    </div>
+
+    <div class="field">
+      <div class="flabel"><span class="name">ICL 型别 <span>· Toric status</span></span><span class="val" id="toricVal">Toric</span></div>
+      <div class="seg two" id="toricSeg"><button data-v="0">Non-toric</button><button data-v="1" class="on">Toric</button></div>
+    </div>
+
+    <div class="field">
+      <div class="flabel"><span class="name">计划长轴方向 θ <span>· 相对水平 0–90°</span></span><span class="val" id="angleVal">0°</span></div>
+      <div class="dual"><input type="range" id="angle" min="0" max="90" step="1" value="0"><input type="number" id="angleNum" min="0" max="90" step="1" value="0"></div>
+      <div class="quick"><button class="btn ghost angleQuick" data-v="0">水平 0°</button><button class="btn ghost angleQuick" data-v="30">斜轴 30°</button><button class="btn ghost angleQuick" data-v="60">斜轴 60°</button><button class="btn ghost angleQuick" data-v="90">垂直 90°</button></div>
+      <div class="note-x">STS-V 通常大于 STS-H；固定 ICL 尺寸时，越靠近垂直方向，压缩量往往越小、预测拱高越低。</div>
+    </div>
+
+    <details>
+      <summary>其余检查变量（记录/证据评估，不进入主公式）</summary>
+      <div class="advanced-grid">
+        <div class="mini"><label>UBM 前房深度 <span>mm</span></label><input id="ubmAcd" type="number" step="0.01" placeholder="例如 3.25"></div>
+        <div class="mini"><label>前房容积 ACV <span>mm³</span></label><input id="acv" type="number" step="1" placeholder="例如 196"></div>
+        <div class="mini"><label>房角 ACA <span>°</span></label><input id="aca" type="number" step="0.1" placeholder="例如 39.5"></div>
+        <div class="mini"><label>眼轴 AL <span>mm</span></label><input id="al" type="number" step="0.01" placeholder="例如 27.00"></div>
+        <div class="mini"><label>中央角膜厚度 CCT <span>μm</span></label><input id="cct" type="number" step="1" placeholder="例如 529"></div>
+        <div class="mini"><label>K1 <span>D</span></label><input id="k1" type="number" step="0.1" placeholder="例如 42.7"></div>
+        <div class="mini"><label>K2 <span>D</span></label><input id="k2" type="number" step="0.1" placeholder="例如 44.4"></div>
+        <div class="mini"><label>术前等效球镜 SE <span>D</span></label><input id="se" type="number" step="0.25" placeholder="例如 -9.00"></div>
+        <div class="mini"><label>ICL 球镜度数绝对值 <span>D</span></label><input id="power" type="number" step="0.5" placeholder="例如 10.5"></div>
+        <div class="mini"><label>年龄 <span>years</span></label><input id="age" type="number" step="1" placeholder="例如 24"></div>
+        <div class="mini"><label>性别</label><select id="sex"><option value="">未记录</option><option value="female">女</option><option value="male">男</option></select></div>
+        <div class="mini"><label>术前内皮计数 <span>cells/mm²</span></label><input id="endo" type="number" step="1" placeholder="例如 3100"></div>
+      </div>
+    </details>
+    <div class="note-x" id="rangeNote"></div>
+  </section>
+
+  <section class="card result">
+    <h2>预测结果 · Prediction</h2>
+    <div class="readout"><div class="bignum"><span id="vault">—</span><span class="u">μm</span></div><span class="classchip" id="classChip">—</span></div>
+    <div class="sub" id="rangeText">经验 80% 预测区间：—</div>
+
+    <div class="meter-wrap">
+      <div class="meter"><div class="zone z-low" style="width:19.23%">低 &lt;250</div><div class="zone z-opt" style="width:38.46%">参考 250–750</div><div class="zone z-high" style="width:42.31%">高 &gt;750</div><div class="band" id="band"></div><div class="needle" id="needle"></div></div>
+      <div class="ticks"><span>0</span><span>250</span><span>500</span><span>750</span><span>1000</span><span>1300</span></div>
+    </div>
+
+    <div class="schematic">
+      <svg id="eyeSvg" viewBox="0 0 460 150" width="100%" height="150" aria-label="前节示意">
+        <path d="M20 44 Q230 6 440 44" stroke="#0A3D44" stroke-width="2.2" fill="none"/><path d="M20 44 Q230 6 440 44 L440 50 Q230 12 20 50 Z" fill="#DCE9E7" opacity=".6"/>
+        <rect x="20" y="70" width="150" height="9" rx="4" fill="#8A6D3B"/><rect x="290" y="70" width="150" height="9" rx="4" fill="#8A6D3B"/>
+        <path d="M120 132 Q230 92 340 132 Q230 150 120 132 Z" fill="#B9C9C7" stroke="#7C9A9E" stroke-width="1"/>
+        <path id="icl" d="M150 118 Q230 88 310 118" stroke="#0E5A63" stroke-width="2.4" fill="none"/>
+        <line id="vLine" x1="230" y1="90" x2="230" y2="120" stroke="#C6851C" stroke-width="1.4"/><line id="vTop" x1="224" y1="90" x2="236" y2="90" stroke="#C6851C" stroke-width="1.4"/><line id="vBot" x1="224" y1="120" x2="236" y2="120" stroke="#C6851C" stroke-width="1.4"/>
+        <text id="vTag" x="242" y="98" font-family="ui-monospace,monospace" font-size="12" fill="#0A3D44">— μm</text>
+        <text x="24" y="34" font-family="ui-monospace,monospace" font-size="10" fill="#5C7377">角膜 cornea</text><text x="196" y="146" font-family="ui-monospace,monospace" font-size="10" fill="#5C7377">晶状体 lens</text><text x="316" y="112" font-family="ui-monospace,monospace" font-size="10" fill="#0E5A63">ICL</text>
       </svg>
-      <h1>ICL 术后拱高预测<span class="en">Postoperative Vault Predictor</span></h1>
-    </div>
-    <div class="prov">
-      <span class="tag">397 眼 · 200 患者</span>
-      <span class="tag" id="modeTag">核心公式 R²=0.32</span>
-    </div>
-  </header>
-
-  <div class="grid">
-
-    <!-- INPUTS -->
-    <div class="card">
-      <h2>术前输入 · Preoperative inputs</h2>
-
-      <div class="field">
-        <div class="flabel"><span class="name">前房深度 ACD <span>· mm</span></span></div>
-        <div class="inrow">
-          <input type="range" id="acd" min="2.60" max="4.00" step="0.01" value="3.20">
-          <input type="number" class="numbox" id="acdN" min="2.60" max="4.00" step="0.01" value="3.20">
-        </div>
-        <div class="rangecap"><span>2.60</span><span>研究范围 2.8–3.8</span><span>4.00</span></div>
-      </div>
-
-      <div class="field">
-        <div class="flabel"><span class="name">计划 ICL 尺寸 <span>· mm</span></span></div>
-        <div class="seg" id="iclSeg">
-          <button data-v="12.1">12.1</button>
-          <button data-v="12.6">12.6</button>
-          <button data-v="13.2" class="on">13.2</button>
-          <button data-v="13.7">13.7</button>
-        </div>
-        <div class="inrow" style="margin-top:8px">
-          <span class="rangecap" style="flex:1">自定义 custom →</span>
-          <input type="number" class="numbox" id="iclN" min="11.5" max="14.0" step="0.1" value="13.2">
-        </div>
-      </div>
-
-      <div class="field">
-        <div class="flabel"><span class="name">术前柱镜 cyl <span>· D（非散光 = 0）</span></span></div>
-        <div class="inrow">
-          <input type="range" id="cyl" min="-6" max="0" step="0.25" value="0">
-          <input type="number" class="numbox" id="cylN" min="-6" max="0" step="0.25" value="0">
-        </div>
-        <div class="rangecap"><span>-6.00</span><button class="chip-btn" id="cylZero">非散光 0</button><span>0.00</span></div>
-      </div>
-
-      <div class="field">
-        <div class="flabel"><span class="name">计划植入方位 <span>· Orientation</span></span></div>
-        <div class="seg two" id="orientSeg">
-          <button data-v="0" class="on">水平 Horizontal</button>
-          <button data-v="1">垂直 Vertical</button>
-        </div>
-        <div class="note-x" style="color:var(--muted)">垂直植入睫状沟更大 → 压缩更小 → 拱高通常更低（约 −127 μm）</div>
-      </div>
-
-      <!-- ADVANCED: STS / WTW extended formula -->
-      <div class="adv">
-        <div class="adv-head" id="advHead">
-          <span class="chev">▶</span>
-          <span class="t">高级：沟到沟 / 白到白（扩展公式）</span>
-          <span class="st">Advanced · STS / WTW</span>
-        </div>
-        <div class="adv-body" id="advBody">
-          <label class="switch"><input type="checkbox" id="useExt"> 启用扩展公式（纳入 STS_eff 与 WTW，R²=0.34）</label>
-          <div class="grid2">
-            <div>
-              <div class="flabel"><span class="name" style="font-size:13px">白到白 WTW <span>·mm</span></span></div>
-              <input type="number" class="numbox wide" id="wtwN" min="10.5" max="13.0" step="0.01" value="11.58">
-            </div>
-            <div>
-              <div class="flabel"><span class="name" style="font-size:13px">沟到沟 水平 STS_h <span>·mm</span></span></div>
-              <input type="number" class="numbox wide" id="sthN" min="10.0" max="14.0" step="0.01" value="11.76">
-            </div>
-            <div>
-              <div class="flabel"><span class="name" style="font-size:13px">沟到沟 垂直 STS_v <span>·mm</span></span></div>
-              <input type="number" class="numbox wide" id="stvN" min="10.0" max="14.0" step="0.01" value="12.21">
-            </div>
-            <div>
-              <div class="flabel"><span class="name" style="font-size:13px">有效沟径 STS_eff <span>·按方位</span></span></div>
-              <input type="number" class="numbox wide" id="stEff" value="11.76" readonly style="background:var(--panel-2)">
-            </div>
-          </div>
-          <div class="note-x" style="color:var(--muted)">STS_eff 自动按植入方位取：水平→STS_h，垂直→STS_v（斜位按椭圆插值）。留空则退回核心公式。</div>
-        </div>
-      </div>
-
-      <!-- RECORD PARSER -->
-      <div class="rec">
-        <div class="adv-head" style="margin-bottom:10px"><span class="t">粘贴病历自动识别 · Paste record</span></div>
-        <textarea id="recTxt" placeholder="将患者术前病历/生物测量文本粘贴到此，例如：&#10;ACD 3.15mm，白到白WTW 11.6，沟到沟 11.5/12.3，柱镜-1.25D，ICL 12.6，6-12点垂直放置"></textarea>
-        <div style="display:flex; gap:8px; margin-top:8px">
-          <button class="btn" id="recBtn">识别并填入</button>
-          <button class="btn ghost" id="recClear">清空</button>
-        </div>
-        <div class="recmsg" id="recMsg"></div>
-      </div>
+      <div class="cap"><span>前节冠状示意（非按比例）</span><span>拱高 = ICL 与自身晶状体间隙</span></div>
     </div>
 
-    <!-- RESULT -->
-    <div class="card result">
-      <h2>预测结果 · Prediction</h2>
-      <div class="readout">
-        <div class="bignum"><span id="vault">687</span><span class="u">μm</span></div>
-        <span class="classchip" id="classChip">理想</span>
-      </div>
-      <div class="sub" id="modeSub">核心公式 · ±MAE 150 μm</div>
-
-      <div class="meter-wrap">
-        <div class="meter" id="meter">
-          <div class="zone z-low" style="width:19.2%">低 &lt;250</div>
-          <div class="zone z-opt" style="width:38.5%">理想 250–750</div>
-          <div class="zone z-high" style="width:42.3%">高 &gt;750</div>
-          <div class="band" id="band"></div>
-          <div class="needle" id="needle"></div>
-        </div>
-        <div class="ticks"><span>0</span><span>250</span><span>750</span><span>1300</span></div>
-      </div>
-
-      <div class="schematic">
-        <svg viewBox="0 0 460 150" width="100%" height="150" aria-hidden="true">
-          <defs><linearGradient id="lensG" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#CBD9D7"/><stop offset="1" stop-color="#B4C6C3"/></linearGradient></defs>
-          <path d="M40 40 Q230 8 420 40" stroke="#0A3D44" stroke-width="2" fill="none"/>
-          <text x="44" y="30" font-family="ui-monospace,monospace" font-size="10" fill="#5C7377">角膜 cornea</text>
-          <path d="M95 128 Q230 92 365 128 L365 150 L95 150 Z" fill="url(#lensG)" stroke="#7C9A9E" stroke-width="1"/>
-          <text x="230" y="142" font-family="ui-monospace,monospace" font-size="10" fill="#3f5b5e" text-anchor="middle">晶状体 lens</text>
-          <path id="icl" d="M150 118 Q230 70 310 118" stroke="#0E5A63" stroke-width="2.4" fill="none"/>
-          <text x="316" y="112" font-family="ui-monospace,monospace" font-size="10" fill="#0E5A63">ICL</text>
-          <line id="vLine" x1="230" y1="70" x2="230" y2="118" stroke="#C6851C" stroke-width="1.5" stroke-dasharray="3 2"/>
-          <line id="vTop" x1="222" y1="70" x2="238" y2="70" stroke="#C6851C" stroke-width="1.5"/>
-          <text id="vTag" x="236" y="96" font-family="ui-monospace,monospace" font-size="10" fill="#C6851C">687 μm</text>
-        </svg>
-        <div class="cap"><span>前节冠状示意（非按比例）</span><span>拱高 = ICL 与晶体间隙</span></div>
-      </div>
-
-      <div class="prob">
-        <div class="pnum" id="pHigh" style="color:var(--ink)">31%</div>
-        <div class="pbar"><div class="pfill" id="pFill" style="width:31%"></div></div>
-        <div class="plabel">高拱高（&gt;750 μm）概率<br>P(high vault)</div>
-      </div>
-
-      <div class="contrib">
-        <div style="font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:8px">逐项贡献 · Contributions</div>
-        <div id="crows"></div>
-      </div>
+    <div class="prob-grid" title="由预测均值与交叉验证 RMSE=151 μm 的正态近似得到，未单独校准">
+      <div class="pbox"><div class="pnum" id="pLow" style="color:var(--low)">—</div><div class="plabel">近似 P(&lt;250)</div></div>
+      <div class="pbox"><div class="pnum" id="pOpt" style="color:var(--optimal)">—</div><div class="plabel">近似 P(250–750)</div></div>
+      <div class="pbox"><div class="pnum" id="pHigh" style="color:var(--high)">—</div><div class="plabel">近似 P(&gt;750)</div></div>
     </div>
-  </div>
+    <div class="sub">阈值概率为研究性近似（假设交叉验证残差近似正态），不是独立校准的临床风险模型。</div>
 
-  <!-- INVERSE SOLVER -->
-  <div class="solver">
-    <h2>反解匹配 · Inverse solver / sizing</h2>
-    <p class="lead">输入目标拱高后，工具会（左）给出各 ICL 尺寸 × 植入方位的预测拱高并标出最接近者；（右）在其余参数固定时反解某一变量所需的取值。</p>
-    <div class="solrow">
-      <label>目标拱高</label>
-      <input type="number" class="numbox" id="targetV" min="150" max="1100" step="10" value="500"><span style="color:var(--muted); font-size:12px">μm</span>
-      <span style="color:var(--muted); font-size:12px; margin-left:8px">（理想区间 250–750，常取 ~500）</span>
+    <div class="diag">
+      <div class="diag-head"><b>WTW–STS 一致性诊断</b><span class="confidence">用于判断 WTW 能否可靠代替 UBM STS</span></div>
+      <div class="diag-grid"><div class="diag-cell"><span>STS-H − WTW</span><strong id="diffH">—</strong></div><div class="diag-cell"><span>STS-V − WTW</span><strong id="diffV">—</strong></div><div class="diag-cell"><span>方向校正 STS<sub>eff</sub></span><strong id="steff">—</strong></div></div>
+      <div class="diag-msg" id="diagMsg">—</div>
     </div>
-    <div class="sgrid">
-      <div>
-        <div style="font-size:12px; font-weight:650; color:var(--petrol-deep); margin-bottom:4px">① ICL 尺寸 × 方位 推荐表</div>
-        <div style="font-size:11px; color:var(--muted)">按当前 ACD/柱镜（及扩展参数）计算；高亮 = 最接近目标</div>
-        <table class="stbl" id="sizeTbl"></table>
-      </div>
-      <div>
-        <div style="font-size:12px; font-weight:650; color:var(--petrol-deep); margin-bottom:8px">② 反解单个变量</div>
-        <div class="solrow">
-          <label>求解变量</label>
-          <select class="sel" id="solveVar">
-            <option value="ICL_size">ICL 尺寸</option>
-            <option value="ACD">ACD（前房深度）</option>
-            <option value="cyl">柱镜 cyl</option>
-            <option value="WTW">白到白 WTW（扩展）</option>
-            <option value="STS_eff">有效沟径 STS_eff（扩展）</option>
-          </select>
-          <button class="btn" id="solveBtn">求解</button>
-        </div>
-        <div class="solout" id="solveOut">选择变量并点击「求解」。其余参数将取上方当前输入值。</div>
-      </div>
-    </div>
-  </div>
 
-  <!-- FORMULA -->
-  <div class="eq">
-    <div class="tabrow"><b>核心公式</b>　拱高(μm) = <span class="muted">−2056.2</span> + <b>284.8</b>×ACD + <b>138.8</b>×ICL尺寸 − <b>30.0</b>×柱镜 − <b>127.1</b>×植入方位<span class="muted">(垂直=1)</span></div>
-    <div class="tabrow"><b>扩展公式</b>　拱高(μm) = <span class="muted">−1812.1</span> + <b>332.2</b>×ACD + <b>343.4</b>×ICL尺寸 − <b>28.3</b>×柱镜 − <b>110.6</b>×植入方位 − <b>147.7</b>×STS_eff − <b>107.3</b>×WTW</div>
-    <div class="tabrow"><b>风险(核心)</b>　logit = −31.00 + 2.892×ACD + 1.588×ICL − 0.425×柱镜 − 1.327×方位　;　P = 1/(1+e<span class="muted">^−logit</span>)</div>
-  </div>
-
-  <div class="disc">
-    <strong>用途与限制。</strong>本工具依据单中心 397 眼回顾性数据拟合的经验公式，输出为术后<strong>早期 OCT 拱高</strong>的群体平均估计，用于术前风险分层、尺寸与方位取舍参考，<strong>不能替代术者判断</strong>。单眼点预测不确定性较大（核心 MAE≈150、扩展≈152 μm；一致性界限较宽）。<strong>扩展公式</strong>纳入沟到沟(STS_eff)与白到白(WTW)后 R² 由 0.32 升至 0.34（增量有限，因这些参数与 ACD/ICL 高度相关）。改变<strong>植入方位</strong>可作为调节拱高的手术手段（垂直较水平约低 127 μm）。柱镜按“非散光 = 0”编码；早期拱高随随访回落（1 月约 −230 μm），跨设备/时点使用前应外部校准。超出研究分布（ACD≈2.8–3.8、ICL 12.1–13.7、cyl 0~−6、WTW 10.8–12.6、STS 10.8–13.2）时外推需谨慎。病历识别为启发式文本匹配，务必人工核对识别结果。
-  </div>
+    <div class="section-title"><b>相邻尺寸 × 方向情景</b><span>同一眼部参数下的模型比较</span></div>
+    <div class="table-wrap"><table><thead><tr><th>ICL size</th><th>0°</th><th>30°</th><th>60°</th><th>90°</th><th>当前</th></tr></thead><tbody id="scenarioBody"></tbody></table></div>
+  </section>
 </div>
 
+<section class="card contrib">
+  <h2>计算分解 · How the prediction is built</h2>
+  <div id="crows"></div>
+</section>
+
+<section class="card ocr-card">
+  <h2>病历单 / 检查报告图片识别 · Local OCR-assisted extraction</h2>
+  <div class="ocr-grid">
+    <div>
+      <div class="drop" id="dropZone">
+        <canvas id="previewCanvas"></canvas>
+        <div class="placeholder" id="placeholder"><b>拖入、粘贴或拍摄报告图片</b>支持 PNG / JPG / WebP；可一次选择多张。<br>建议照片正对、光线均匀、文字高度充足。</div>
+      </div>
+      <input id="fileInput" type="file" accept="image/png,image/jpeg,image/webp" capture="environment" multiple hidden>
+      <div class="actions"><button class="btn primary" id="chooseBtn">选择 / 拍摄图片</button><button class="btn ghost" id="demoBtn">生成模拟报告图</button><button class="btn danger" id="clearImageBtn">清除</button></div>
+      <div class="ocr-controls" style="margin-top:10px"><select id="preprocess"><option value="contrast" selected>增强对比度（推荐）</option><option value="gray">灰度</option><option value="binary">二值化</option><option value="original">原图</option></select><select id="ocrLang"><option value="chi_sim+eng" selected>简体中文 + English</option><option value="eng">English only</option></select></div>
+      <button class="btn primary" id="ocrBtn" style="width:100%">开始本地 OCR</button>
+      <div class="progress"><div id="ocrProgress"></div></div><div class="status" id="ocrStatus">尚未加载图片。</div>
+      <div class="privacy"><b>隐私：</b>图片像素不发送到本项目服务器；识别在浏览器内执行。首次识别会从 CDN 下载 OCR 程序与语言数据。不要在公共电脑保留含姓名、电话、身份证号的截图。</div>
+    </div>
+    <div>
+      <div class="flabel"><span class="name">OCR / 粘贴文本 <span>· 可手工修正后再解析</span></span><span class="val" id="charCount">0 chars</span></div>
+      <textarea id="ocrText" placeholder="识别文本会显示在这里；也可直接粘贴医院系统导出的文字。"></textarea>
+      <div class="actions"><button class="btn primary" id="parseBtn">解析字段</button><button class="btn ghost" id="sampleTextBtn">载入模拟文本</button><button class="btn ghost" id="redactBtn">隐藏常见身份信息</button></div>
+      <div class="candidate-actions"><label>应用眼别：</label><select id="applyEye"><option value="OD">右眼 OD</option><option value="OS">左眼 OS</option></select><button class="btn primary" id="applyBtn" disabled>应用已识别字段</button><span class="confidence" id="parseStatus">尚未解析</span></div>
+      <div class="table-wrap"><table class="candidate-table"><thead><tr><th>字段</th><th>OD</th><th>OS</th><th>通用值</th><th>来源片段</th></tr></thead><tbody id="candidateBody"><tr><td colspan="5" class="muted">上传图片并运行 OCR，或粘贴文字后点击“解析字段”。</td></tr></tbody></table></div>
+    </div>
+  </div>
+</section>
+
+<section class="card evidence">
+  <h2>你这批数据中各变量的作用 · Evidence from the uploaded cohort</h2>
+  <div class="legend">下表为 377 只具有术后第 1 天与第 1 个月拱高的眼。Pearson r 是单变量关联，不代表因果；“加入核心模型后的增益”来自按患者分组的重复 5 折交叉验证。</div>
+  <div class="table-wrap"><table><thead><tr><th>变量</th><th>与 1 月拱高 r</th><th>调整后/预测价值</th><th>在本工具中的处理</th></tr></thead><tbody>
+    <tr><td>ACD（Pentacam）</td><td>+0.451</td><td><span class="badge b-core">核心</span> 独立正向贡献稳定</td><td>进入主公式</td></tr>
+    <tr><td>UBM 前房深度</td><td>+0.467</td><td><span class="badge b-context">小幅增益</span> 加入核心模型约改善 MAE 1.7 μm</td><td>记录与质控；暂不改主公式</td></tr>
+    <tr><td>ICL 尺寸</td><td>+0.388</td><td><span class="badge b-core">核心</span> 固定眼部解剖时尺寸越大，预测拱高越高</td><td>进入主公式与情景比较</td></tr>
+    <tr><td>STS-H / STS-V</td><td>+0.306 / +0.285</td><td><span class="badge b-core">核心组合</span> 与植入方向共同建模明显改善 CV</td><td>合成为方向校正 STS<sub>eff</sub></td></tr>
+    <tr><td>WTW</td><td>+0.368</td><td><span class="badge b-context">代理变量</span> 加入已有 ACD、尺寸、LT、STS 后未改善 CV</td><td>一致性诊断；STS 缺失时仅作回退估算</td></tr>
+    <tr><td>晶状体厚度 LT</td><td>−0.247</td><td><span class="badge b-core">核心</span> 调整后仍为负向贡献</td><td>进入主公式</td></tr>
+    <tr><td>植入方向</td><td>−0.263</td><td><span class="badge b-core">核心机制</span> 由椭圆形沟径和压缩量体现</td><td>通过 θ 改变 STS<sub>eff</sub></td></tr>
+    <tr><td>ACV / ACA</td><td>+0.376 / +0.352</td><td><span class="badge b-context">共线</span> 多数信息与 ACD 重叠；增量很小</td><td>OCR 与病历记录，不进入主公式</td></tr>
+    <tr><td>Toric 状态</td><td>+0.210</td><td><span class="badge b-context">预测关联</span> 可能包含选择偏倚/混杂，不能作因果解释</td><td>进入主公式，但显示警示</td></tr>
+    <tr><td>年龄、性别、K、CCT、AL、内皮</td><td>|r| ≈ 0.12–0.19</td><td><span class="badge b-weak">弱/不稳定</span> 预测增益小或不一致</td><td>仅记录</td></tr>
+    <tr><td>球镜、SE、ICL power</td><td>|r| ≤ 0.052</td><td><span class="badge b-no">无明显增益</span> 本队列中与 1 月拱高几乎无单变量线性关联</td><td>仅记录</td></tr>
+  </tbody></table></div>
+</section>
+
+<div class="eq">
+  <b>主模型</b>　Vault<sub>1m</sub>(μm) = <span class="muted2">−959.8149</span> + <b>198.8547</b>×ACD + <b>189.3997</b>×ICL size + <b>45.9887</b>×Toric − <b>114.9899</b>×STS<sub>eff</sub> − <b>99.3845</b>×LT<br>
+  <b>方向沟径</b>　STS<sub>eff</sub> = 1 / √(cos²θ / STS-H² + sin²θ / STS-V²)<br>
+  <b>WTW 回退（探索性）</b>　STS-H ≈ 2.627 + 0.7888×WTW；STS-V ≈ 2.780 + 0.8145×WTW <span class="muted2">（队列内 MAE 约 0.23 / 0.28 mm）</span>
+</div>
+<div class="toolbar"><button class="btn primary" id="copyBtn">复制研究摘要</button><button class="btn ghost" id="jsonBtn">下载 JSON</button><button class="btn ghost" id="printBtn">打印 / 导出 PDF</button><button class="btn danger" id="resetBtn">重置全部</button></div>
+<p class="disc"><strong>解释重点。</strong>WTW 与拱高有明显单变量关联，但它同时影响临床 ICL 尺寸选择，又只是对内部睫状沟大小的外部代理；在本队列中，当 ACD、计划尺寸、LT 和方向校正 STS 已知后，加入 WTW 没有改善交叉验证性能。反过来，STS 与植入方向联合使用可提供额外信息。模型输出属于群体层面的研究估计；点预测、经验区间和近似阈值概率都不能被理解为安全保证。</p>
+<p class="disc"><strong>参考实现。</strong>OCR 使用 Tesseract.js（浏览器 WebAssembly）；医学依据与模型讨论见配套论文。页面不会自动保存图片、OCR 文本或病历信息。</p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@7/dist/tesseract.min.js"></script>
 <script>
 (function(){
-  "use strict";
-  // ---- coefficients ----
-  var Bc={i:-2056.2495, acd:284.7607, icl:138.7733, cyl:-30.0215, vert:-127.1224};
-  var Lc={i:-31.0030,    acd:2.8923,   icl:1.5878,   cyl:-0.4253,  vert:-1.3268};
-  var Be={i:-1812.14, acd:332.20, icl:343.41, cyl:-28.32, vert:-110.55, stseff:-147.70, wtw:-107.34};
-  var Le={i:-29.846,  acd:3.3937, icl:3.6985, cyl:-0.4223, vert:-1.0349, stseff:-1.8128, wtw:-0.7037};
-  var MAE_C=150, MAE_E=152, SCALE_MAX=1300;
-  var ICL_SIZES=[12.1,12.6,13.2,13.7];
+  'use strict';
+  const $=id=>document.getElementById(id);
+  const B={i:-959.8149,acd:198.8547,icl:189.3997,toric:45.9887,sts:-114.9899,lt:-99.3845};
+  const RES80={lo:-197.7,hi:185.4};
+  const SIGMA=151.0, SCALE_MAX=1300;
+  const ranges={acd:[2.62,3.88],lt:[3.02,4.51],stsh:[10.40,13.14],stsv:[11.06,13.66],wtw:[10.40,13.10]};
+  let iclValue=12.6, toricValue=1, sourceMode='measured';
+  let files=[], currentCanvasReady=false, ocrWorker=null, parsedCandidates={};
 
-  var el=function(id){return document.getElementById(id);};
-  function clampPct(x){return Math.max(0,Math.min(100,x));}
-  function pos(v){return clampPct(v/SCALE_MAX*100);}
-  var state={acd:3.20, icl:13.2, cyl:0, vert:0, wtw:11.58, sth:11.76, stv:12.21, ext:false};
+  function clamp(x,a,b){return Math.max(a,Math.min(b,x));}
+  function pos(v){return clamp(v/SCALE_MAX*100,0,100)}
+  function fmt(v,d=2){return Number.isFinite(v)?v.toFixed(d):'—'}
+  function num(id){const v=parseFloat($(id).value);return Number.isFinite(v)?v:NaN}
+  function effSTS(h,v,deg){const t=deg*Math.PI/180;return 1/Math.sqrt(Math.cos(t)**2/h**2+Math.sin(t)**2/v**2)}
+  function estimateSTS(w){return {h:2.6272317706+0.7887754050*w,v:2.7803584299+0.8145421548*w}}
+  function normalCDF(x){const sign=x<0?-1:1;const z=Math.abs(x)/Math.sqrt(2);const t=1/(1+0.3275911*z);const a1=.254829592,a2=-.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429;const erf=sign*(1-(((((a5*t+a4)*t)+a3)*t+a2)*t+a1)*t*Math.exp(-z*z));return .5*(1+erf)}
+  function classify(v){if(v<250)return {t:'低拱高',c:'var(--low)'};if(v<=750)return {t:'参考区间',c:'var(--optimal)'};return {t:'高拱高',c:'var(--high)'}}
 
-  function stsEff(){ // elliptical interp not needed here (binary orientation); use axis-matched
-    return state.vert? state.stv : state.sth;
+  function bindDual(rangeId,numId,valId,decimals){
+    const r=$(rangeId),n=$(numId);function fromR(){n.value=r.value;$(valId).textContent=(+r.value).toFixed(decimals);compute()}function fromN(){if(Number.isFinite(+n.value)){r.value=clamp(+n.value,+r.min,+r.max);$(valId).textContent=(+n.value).toFixed(decimals);compute()}}
+    r.addEventListener('input',fromR);n.addEventListener('input',fromN);
   }
-  function vaultOf(o){ // o overrides state fields
-    var a=('acd'in o)?o.acd:state.acd, i=('icl'in o)?o.icl:state.icl,
-        c=('cyl'in o)?o.cyl:state.cyl, v=('vert'in o)?o.vert:state.vert,
-        se=('stseff'in o)?o.stseff:stsEff(), w=('wtw'in o)?o.wtw:state.wtw,
-        ext=('ext'in o)?o.ext:state.ext;
-    if(ext) return Be.i+Be.acd*a+Be.icl*i+Be.cyl*c+Be.vert*v+Be.stseff*se+Be.wtw*w;
-    return Bc.i+Bc.acd*a+Bc.icl*i+Bc.cyl*c+Bc.vert*v;
-  }
-  function pHighOf(o){
-    var a=('acd'in o)?o.acd:state.acd, i=('icl'in o)?o.icl:state.icl,
-        c=('cyl'in o)?o.cyl:state.cyl, v=('vert'in o)?o.vert:state.vert,
-        se=('stseff'in o)?o.stseff:stsEff(), w=('wtw'in o)?o.wtw:state.wtw,
-        ext=('ext'in o)?o.ext:state.ext, z;
-    if(ext) z=Le.i+Le.acd*a+Le.icl*i+Le.cyl*c+Le.vert*v+Le.stseff*se+Le.wtw*w;
-    else z=Lc.i+Lc.acd*a+Lc.icl*i+Lc.cyl*c+Lc.vert*v;
-    return 1/(1+Math.exp(-z));
-  }
-  function classify(v){
-    if(v<250) return {t:'低拱高', c:'var(--low)'};
-    if(v<=750) return {t:'理想', c:'var(--optimal)'};
-    return {t:'高拱高', c:'var(--high)'};
-  }
+  bindDual('acd','acdNum','acdVal',2);bindDual('lt','ltNum','ltVal',2);bindDual('stsh','stshNum','stshVal',2);bindDual('stsv','stsvNum','stsvVal',2);bindDual('wtw','wtwNum','wtwVal',2);bindDual('angle','angleNum','angleVal',0);
 
-  function contribRows(){
-    var a=state.acd,i=state.icl,c=state.cyl,v=state.vert,se=stsEff(),w=state.wtw;
-    var items;
-    if(state.ext){
-      var b=Be, sum=b.i+b.acd*a+b.icl*i+b.cyl*c+b.vert*v+b.stseff*se+b.wtw*w;
-      items=[{n:'基线',v:b.i,cls:'base'},{n:'ACD',v:b.acd*a},{n:'ICL 尺寸',v:b.icl*i},
-        {n:'柱镜',v:b.cyl*c},{n:'植入方位',v:b.vert*v},{n:'STS_eff',v:b.stseff*se},{n:'WTW',v:b.wtw*w}];
-      renderContrib(items,sum);
-    } else {
-      var bc=Bc, s2=bc.i+bc.acd*a+bc.icl*i+bc.cyl*c+bc.vert*v;
-      items=[{n:'基线',v:bc.i,cls:'base'},{n:'ACD',v:bc.acd*a},{n:'ICL 尺寸',v:bc.icl*i},
-        {n:'柱镜',v:bc.cyl*c},{n:'植入方位',v:bc.vert*v}];
-      renderContrib(items,s2);
-    }
-  }
-  function renderContrib(items,sum){
-    var maxAbs=1; items.forEach(function(it){maxAbs=Math.max(maxAbs,Math.abs(it.v));});
-    var html='';
-    items.forEach(function(it){
-      var cls=it.cls||(it.v>=0?'pos':'neg'); var w=Math.abs(it.v)/maxAbs*48;
-      var left=it.v>=0?50:(50-w);
-      html+='<div class="crow"><div class="cn">'+it.n+'</div>'+
-        '<div class="cbar-track"><div class="cbar-mid"></div>'+
-        '<div class="cbar '+cls+'" style="left:'+left+'%;width:'+w+'%"></div></div>'+
-        '<div class="cval">'+(it.v>=0?'+':'')+Math.round(it.v)+'</div></div>';
-    });
-    html+='<div class="crow csum"><div class="cn">预测拱高</div><div></div>'+
-      '<div class="cval" style="color:var(--ink)">'+Math.round(sum)+' μm</div></div>';
-    el('crows').innerHTML=html;
-  }
+  function setDual(id,v){const r=$(id),n=$(id+'Num');if(!Number.isFinite(+v))return;r.value=clamp(+v,+r.min,+r.max);n.value=(+v).toFixed(id==='angle'?0:2);$(id+'Val').textContent=(+n.value).toFixed(id==='angle'?0:2)+(id==='angle'?'°':'')}
+  function setSource(mode){sourceMode=mode;[...$('sourceSeg').children].forEach(b=>b.classList.toggle('on',b.dataset.v===mode));$('sourceVal').textContent=mode==='measured'?'UBM 实测':'WTW 估算';const disabled=mode==='estimated';['stsh','stshNum','stsv','stsvNum'].forEach(id=>$(id).disabled=disabled);compute()}
+  $('sourceSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setSource(b.dataset.v)});
+  $('iclSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('iclSeg').children].forEach(x=>x.classList.remove('on'));b.classList.add('on');iclValue=+b.dataset.v;$('iclVal').textContent=iclValue.toFixed(1);compute()});
+  $('toricSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('toricSeg').children].forEach(x=>x.classList.remove('on'));b.classList.add('on');toricValue=+b.dataset.v;$('toricVal').textContent=toricValue?'Toric':'Non-toric';compute()});
+  document.querySelectorAll('.angleQuick').forEach(b=>b.addEventListener('click',()=>{setDual('angle',+b.dataset.v);compute()}));
+  document.querySelectorAll('.advanced-grid input,.advanced-grid select').forEach(x=>x.addEventListener('input',compute));
 
-  function updateEye(v){
-    var gap=Math.max(6,Math.min(58, 6 + v/1250*52));
-    var lensTopY=118, iclPeak=lensTopY-gap;
-    el('icl').setAttribute('d','M150 118 Q230 '+(iclPeak-8).toFixed(1)+' 310 118');
-    el('vLine').setAttribute('y1',(iclPeak-2).toFixed(1));
-    el('vTop').setAttribute('y1',(iclPeak-2).toFixed(1));
-    el('vTop').setAttribute('y2',(iclPeak-2).toFixed(1));
-    el('vTag').setAttribute('y',(((iclPeak-2)+lensTopY)/2+4).toFixed(1));
-    el('vTag').textContent=Math.round(v)+' μm';
+  function inputs(size=iclValue,angleOverride=null){
+    const acd=num('acd'),lt=num('lt'),wtw=num('wtw'),angle=angleOverride===null?num('angle'):angleOverride;let h=num('stsh'),v=num('stsv');
+    if(sourceMode==='estimated'&&Number.isFinite(wtw)){const e=estimateSTS(wtw);h=e.h;v=e.v}
+    return {acd,lt,wtw,h,v,angle,size,toric:toricValue,stsEff:effSTS(h,v,angle)}
   }
+  function predict(size=iclValue,angleOverride=null){const q=inputs(size,angleOverride);q.y=B.i+B.acd*q.acd+B.icl*q.size+B.toric*q.toric+B.sts*q.stsEff+B.lt*q.lt;return q}
 
-  function rangeCheck(){
-    var m=[];
-    if(state.acd<2.8||state.acd>3.8) m.push('ACD 超范围');
-    if(state.icl<12.1||state.icl>13.7) m.push('ICL 超范围');
-    if(state.cyl<-6) m.push('柱镜超范围');
-    if(state.ext){ if(state.wtw<10.8||state.wtw>12.6) m.push('WTW 超范围');
-      if(stsEff()<10.8||stsEff()>13.2) m.push('STS 超范围'); }
-    // reuse orientation note area is separate; show in modeSub if needed
-    el('rangeWarn').textContent = m.length? ('⚠ '+m.join('，')+'，外推需谨慎'):'';
-  }
-
-  function syncEffField(){ el('stEff').value=stsEff().toFixed(2); }
+  function updateEye(v){const gap=clamp(6+v/1250*52,6,58),lensTopY=118,iclPeak=lensTopY-gap;$('icl').setAttribute('d','M150 118 Q230 '+(iclPeak-8).toFixed(1)+' 310 118');$('vLine').setAttribute('y1',(iclPeak-2).toFixed(1));$('vTop').setAttribute('y1',(iclPeak-2).toFixed(1));$('vTop').setAttribute('y2',(iclPeak-2).toFixed(1));$('vTag').setAttribute('y',(((iclPeak-2)+lensTopY)/2+4).toFixed(1));$('vTag').textContent=Math.round(v)+' μm'}
+  function contribRows(q){const parts=[['基线',B.i,'base'],['ACD',B.acd*q.acd,'pos'],['ICL 尺寸',B.icl*q.size,'pos'],['Toric',B.toric*q.toric,B.toric*q.toric>=0?'pos':'neg'],['STS_eff',B.sts*q.stsEff,'neg'],['LT',B.lt*q.lt,'neg']];const max=Math.max(...parts.map(x=>Math.abs(x[1])),1);let html='';parts.forEach(([n,v,cls])=>{const w=Math.abs(v)/max*48,left=v>=0?50:50-w;html+=`<div class="crow"><div>${n}</div><div class="cbar-track"><div class="cbar-mid"></div><div class="cbar ${cls}" style="left:${left}%;width:${w}%"></div></div><div class="cval">${v>=0?'+':''}${Math.round(v)}</div></div>`});html+=`<div class="crow csum"><div>预测拱高</div><div></div><div class="cval" style="color:var(--ink)">${Math.round(q.y)} μm</div></div>`;$('crows').innerHTML=html}
+  function scenarios(){const sizes=[12.1,12.6,13.2,13.7],angles=[0,30,60,90],curA=num('angle');$('scenarioBody').innerHTML=sizes.map(s=>{const vals=angles.map(a=>Math.round(predict(s,a).y));const cur=Math.round(predict(s,curA).y);return `<tr class="${s===iclValue?'selected-row':''}"><td>${s.toFixed(1)}</td>${vals.map(v=>`<td>${v}</td>`).join('')}<td><b>${cur}</b></td></tr>`}).join('')}
+  function rangeCheck(q){const msgs=[];if(q.acd<ranges.acd[0]||q.acd>ranges.acd[1])msgs.push('ACD');if(q.lt<ranges.lt[0]||q.lt>ranges.lt[1])msgs.push('LT');if(q.h<ranges.stsh[0]||q.h>ranges.stsh[1])msgs.push('STS-H');if(q.v<ranges.stsv[0]||q.v>ranges.stsv[1])msgs.push('STS-V');if(q.wtw<ranges.wtw[0]||q.wtw>ranges.wtw[1])msgs.push('WTW');$('rangeNote').textContent=msgs.length?'⚠ '+msgs.join('、')+' 超出建模队列范围，属于外推。':''}
+  function diag(q){const dh=q.h-q.wtw,dv=q.v-q.wtw;$('diffH').textContent=(dh>=0?'+':'')+dh.toFixed(2)+' mm';$('diffV').textContent=(dv>=0?'+':'')+dv.toFixed(2)+' mm';$('steff').textContent=q.stsEff.toFixed(3)+' mm';let msg='';const maxd=Math.max(Math.abs(dh),Math.abs(dv));if(sourceMode==='estimated')msg='当前 STS 由 WTW 回归估算，预测会额外继承约 0.23–0.28 mm 的沟径估算误差；有 UBM 时应改用实测值。';else if(maxd>0.8)msg='WTW 与至少一个方向的 STS 相差 >0.8 mm，WTW 很可能不是可靠替代；优先复核 UBM 测量、眼别和录入。';else if(maxd>0.5)msg='WTW–STS 差异中等，单独按 WTW sizing 可能产生不可忽略的尺寸错配。';else msg='WTW 与 STS 差异处于本队列常见范围，但仍不能视为等价测量。';$('diagMsg').textContent=msg;$('sourceNote').textContent=sourceMode==='estimated'?'⚠ 使用 WTW 回退方程；不等同于真实 UBM STS。':''}
 
   function compute(){
-    var v=vaultOf({}), p=pHighOf({});
-    el('vault').textContent=Math.round(v);
-    var cl=classify(v); var chip=el('classChip'); chip.textContent=cl.t; chip.style.background=cl.c;
-    var mae=state.ext?MAE_E:MAE_C;
-    el('needle').style.left=pos(v)+'%';
-    var lo=pos(v-mae), hi=pos(v+mae); el('band').style.left=lo+'%'; el('band').style.width=Math.max(0,hi-lo)+'%';
-    el('pHigh').textContent=Math.round(p*100)+'%'; el('pFill').style.width=clampPct(p*100)+'%';
-    el('pHigh').style.color = p>0.5?'var(--high)':(p>0.25?'var(--ink)':'var(--optimal)');
-    el('modeSub').innerHTML=(state.ext?'扩展公式 · ±MAE 152 μm':'核心公式 · ±MAE 150 μm')+' <span id="rangeWarn" style="color:var(--high)"></span>';
-    el('modeTag').textContent=state.ext?'扩展公式 R²=0.34':'核心公式 R²=0.32';
-    updateEye(v); contribRows(); syncEffField(); rangeCheck();
-    buildSizeTable();
+    const q=predict();if(!Object.values(q).every((v,k)=>k===9||Number.isFinite(v)))return;
+    $('angleVal').textContent=Math.round(q.angle)+'°';$('vault').textContent=Math.round(q.y);const cl=classify(q.y),chip=$('classChip');chip.textContent=cl.t;chip.style.background=cl.c;
+    const lo=Math.max(0,q.y+RES80.lo),hi=q.y+RES80.hi;$('rangeText').textContent=`经验 80% 预测区间：${Math.round(lo)}–${Math.round(hi)} μm（由患者分组 CV 残差得到）`;$('needle').style.left=pos(q.y)+'%';$('band').style.left=pos(lo)+'%';$('band').style.width=Math.max(0,pos(hi)-pos(lo))+'%';
+    const pL=normalCDF((250-q.y)/SIGMA),pH=1-normalCDF((750-q.y)/SIGMA),pO=clamp(1-pL-pH,0,1);$('pLow').textContent=Math.round(pL*100)+'%';$('pOpt').textContent=Math.round(pO*100)+'%';$('pHigh').textContent=Math.round(pH*100)+'%';
+    updateEye(q.y);contribRows(q);scenarios();rangeCheck(q);diag(q)
   }
 
-  // ---- input wiring: slider <-> numbox ----
-  function pair(sliderId,boxId,key,dec){
-    var sl=el(sliderId), bx=el(boxId);
-    function fromSlider(){ state[key]=parseFloat(sl.value); if(bx) bx.value=state[key].toFixed(dec); compute(); }
-    function fromBox(){ var x=parseFloat(bx.value); if(isNaN(x)) return; state[key]=x; if(sl){sl.value=x;} compute(); }
-    if(sl) sl.addEventListener('input',fromSlider);
-    if(bx) bx.addEventListener('input',fromBox);
-  }
-  pair('acd','acdN','acd',2);
-  pair('cyl','cylN','cyl',2);
-  // ICL: segmented + custom box
-  el('iclSeg').addEventListener('click',function(e){
-    var b=e.target.closest('button'); if(!b) return;
-    [].forEach.call(el('iclSeg').children,function(x){x.classList.remove('on');});
-    b.classList.add('on'); state.icl=parseFloat(b.dataset.v); el('iclN').value=state.icl.toFixed(1); compute();
-  });
-  el('iclN').addEventListener('input',function(){
-    var x=parseFloat(this.value); if(isNaN(x)) return; state.icl=x;
-    [].forEach.call(el('iclSeg').children,function(b){b.classList.toggle('on',parseFloat(b.dataset.v)===x);});
-    compute();
-  });
-  el('cylZero').addEventListener('click',function(){state.cyl=0; el('cyl').value=0; el('cylN').value='0.00'; compute();});
-  el('orientSeg').addEventListener('click',function(e){
-    var b=e.target.closest('button'); if(!b) return;
-    [].forEach.call(el('orientSeg').children,function(x){x.classList.remove('on');});
-    b.classList.add('on'); state.vert=parseInt(b.dataset.v,10); compute();
-  });
-  // advanced numeric fields
-  ['wtwN','sthN','stvN'].forEach(function(id){
-    el(id).addEventListener('input',function(){
-      var x=parseFloat(this.value);
-      if(id==='wtwN'&&!isNaN(x)) state.wtw=x;
-      if(id==='sthN'&&!isNaN(x)) state.sth=x;
-      if(id==='stvN'&&!isNaN(x)) state.stv=x;
-      compute();
-    });
-  });
-  el('useExt').addEventListener('change',function(){ state.ext=this.checked; compute(); });
-  // advanced collapse
-  el('advHead').addEventListener('click',function(){
-    this.classList.toggle('open'); el('advBody').classList.toggle('open');
-  });
+  // OCR image handling
+  const drop=$('dropZone'),canvas=$('previewCanvas'),ctx=canvas.getContext('2d',{willReadFrequently:true});
+  $('chooseBtn').addEventListener('click',()=>$('fileInput').click());$('fileInput').addEventListener('change',e=>loadFiles([...e.target.files]));
+  ['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('drag')}));['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('drag')}));drop.addEventListener('drop',e=>loadFiles([...e.dataTransfer.files].filter(f=>f.type.startsWith('image/'))));
+  window.addEventListener('paste',e=>{const imgs=[...e.clipboardData.items].filter(i=>i.type.startsWith('image/')).map(i=>i.getAsFile());if(imgs.length)loadFiles(imgs)});
+  function loadFiles(fs){if(!fs.length)return;files=fs.slice(0,6);renderFile(files[0]);$('ocrStatus').textContent=`已载入 ${files.length} 张图片；点击“开始本地 OCR”。`}
+  function renderFile(file){return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>{const maxW=2200,scale=Math.min(2.2,maxW/img.width);canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);ctx.drawImage(img,0,0,canvas.width,canvas.height);preprocessCanvas();canvas.style.display='block';$('placeholder').style.display='none';currentCanvasReady=true;URL.revokeObjectURL(img.src);resolve()};img.onerror=()=>reject(new Error('无法读取图片'));img.src=URL.createObjectURL(file)})}
+  function preprocessCanvas(){if(!canvas.width)return;const mode=$('preprocess').value;if(mode==='original')return;const im=ctx.getImageData(0,0,canvas.width,canvas.height),d=im.data;for(let i=0;i<d.length;i+=4){const g=.299*d[i]+.587*d[i+1]+.114*d[i+2];let v=g;if(mode==='contrast')v=clamp((g-128)*1.45+128,0,255);if(mode==='binary')v=g>175?255:0;d[i]=d[i+1]=d[i+2]=v}ctx.putImageData(im,0,0)}
+  $('preprocess').addEventListener('change',()=>{if(files.length)renderFile(files[0])});
+  function demoCanvas(){files=[];canvas.width=1500;canvas.height=1050;ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#18383d';ctx.font='bold 46px sans-serif';ctx.fillText('前节生物测量 / ICL 术前检查（模拟报告）',70,85);ctx.font='30px sans-serif';const lines=['编号: DEMO-2026    年龄: 24    性别: 女','项目                         OD              OS','ACD (Pentacam) mm             3.20            3.18','ACV mm3                       198             194','ACA deg                       39.5            38.8','WTW (Pentacam) mm             11.60           11.55','UBM STS H/V mm                11.80/12.20     11.75/12.16','Lens thickness LT mm          3.63            3.66','Axial length AL mm            27.05           26.98','CCT um                        529             532','K1/K2 D                       42.7/44.4       42.9/44.6','Planned ICL                   Toric 12.6 mm   Toric 12.6 mm','Orientation                   Horizontal 0 deg  Vertical 90 deg'];let y=155;lines.forEach((t,i)=>{ctx.fillStyle=i===1?'#0E5A63':'#263f43';ctx.font=i===1?'bold 31px monospace':'28px monospace';ctx.fillText(t,70,y);y+=67});ctx.strokeStyle='#b9c9c7';ctx.lineWidth=2;ctx.strokeRect(45,110,1410,880);canvas.style.display='block';$('placeholder').style.display='none';currentCanvasReady=true;$('ocrStatus').textContent='已生成不含真实患者信息的模拟报告图。'}
+  $('demoBtn').addEventListener('click',demoCanvas);
+  $('clearImageBtn').addEventListener('click',()=>{files=[];canvas.width=0;canvas.height=0;canvas.style.display='none';$('placeholder').style.display='block';currentCanvasReady=false;$('ocrProgress').style.width='0';$('ocrStatus').textContent='已清除图片。'});
 
-  // ---- inverse solver: ICL x orientation table ----
-  function buildSizeTable(){
-    var target=parseFloat(el('targetV').value)||500;
-    var rows='<tr><th>ICL 尺寸</th><th>水平 H</th><th>垂直 V</th></tr>';
-    var best={d:1e9,r:-1,c:-1}; var cells=[];
-    ICL_SIZES.forEach(function(sz,ri){
-      [0,1].forEach(function(or,ci){
-        var vv=vaultOf({icl:sz,vert:or});
-        cells.push({sz:sz,or:or,v:vv}); var d=Math.abs(vv-target);
-        if(d<best.d){best={d:d,r:ri,c:ci,v:vv,sz:sz,or:or};}
-      });
-    });
-    ICL_SIZES.forEach(function(sz,ri){
-      var h=cells[ri*2].v, v=cells[ri*2+1].v;
-      var hc=(best.r===ri&&best.c===0)?'best':''; var vc=(best.r===ri&&best.c===1)?'best':'';
-      rows+='<tr><td class="hd">'+sz.toFixed(1)+'</td>'+
-        '<td class="'+hc+'">'+Math.round(h)+'</td><td class="'+vc+'">'+Math.round(v)+'</td></tr>';
-    });
-    el('sizeTbl').innerHTML=rows;
-    return best;
-  }
-  el('targetV').addEventListener('input',function(){ buildSizeTable(); });
+  async function ensureWorker(){if(!window.Tesseract)throw new Error('无法加载 Tesseract.js；请检查网络或 CDN 访问。');if(ocrWorker)return ocrWorker;const lang=$('ocrLang').value.split('+');ocrWorker=await Tesseract.createWorker(lang,1,{logger:m=>{if(m.progress!=null){$('ocrProgress').style.width=Math.round(m.progress*100)+'%';$('ocrStatus').textContent=(m.status||'OCR')+' '+Math.round(m.progress*100)+'%'}}});await ocrWorker.setParameters({preserve_interword_spaces:'1',user_defined_dpi:'300'});return ocrWorker}
+  $('ocrBtn').addEventListener('click',async()=>{if(!currentCanvasReady&&!files.length){$('ocrStatus').textContent='请先选择图片或生成模拟报告。';return}const btn=$('ocrBtn');btn.disabled=true;try{const worker=await ensureWorker();let texts=[];if(files.length){for(let i=0;i<files.length;i++){await renderFile(files[i]);$('ocrStatus').textContent=`识别第 ${i+1}/${files.length} 张…`;const ret=await worker.recognize(canvas);texts.push(ret.data.text)}}else{const ret=await worker.recognize(canvas);texts.push(ret.data.text)}$('ocrText').value=texts.join('\n\n--- PAGE ---\n\n');updateCharCount();$('ocrStatus').textContent=`OCR 完成：${texts.length} 张。请人工核对文本后解析字段。`;parseText()}catch(err){console.error(err);$('ocrStatus').textContent='OCR 失败：'+err.message+'。仍可把外部 OCR 文本粘贴到右侧解析。'}finally{btn.disabled=false}});
 
-  // ---- inverse solver: solve for one variable ----
-  function solveVar(){
-    var target=parseFloat(el('targetV').value); if(isNaN(target)){el('solveOut').textContent='请先填写目标拱高。';return;}
-    var vr=el('solveVar').value, ext=state.ext;
-    var B=ext?Be:Bc;
-    // vault = B.i + B.acd*acd + B.icl*icl + B.cyl*cyl + B.vert*vert [+ B.stseff*stseff + B.wtw*wtw]
-    var known={acd:state.acd,icl:state.icl,cyl:state.cyl,vert:state.vert,stseff:stsEff(),wtw:state.wtw};
-    // constant = target - sum(all known except the solve var * coef)
-    var coefMap={ICL_size:B.icl,ACD:B.acd,cyl:B.cyl,WTW:ext?B.wtw:0,STS_eff:ext?B.stseff:0};
-    if((vr==='WTW'||vr==='STS_eff')&&!ext){ el('solveOut').innerHTML='请先在“高级”中勾选<b>扩展公式</b>后再反解 '+ (vr==='WTW'?'WTW':'STS_eff')+'。'; return; }
-    var coef=coefMap[vr]; if(!coef){el('solveOut').textContent='该变量不可解。';return;}
-    // base = B.i + contributions of all known vars EXCEPT the target var
-    var base=B.i + B.acd*known.acd + B.icl*known.icl + B.cyl*known.cyl + B.vert*known.vert;
-    if(ext) base += B.stseff*known.stseff + B.wtw*known.wtw;
-    // subtract the current solve-var contribution to remove it
-    var keymap={ICL_size:'icl',ACD:'acd',cyl:'cyl',WTW:'wtw',STS_eff:'stseff'};
-    base -= coef*known[keymap[vr]];
-    var need=(target-base)/coef;
-    var label={ICL_size:'ICL 尺寸',ACD:'ACD',cyl:'柱镜 cyl',WTW:'白到白 WTW',STS_eff:'有效沟径 STS_eff'}[vr];
-    var unit=(vr==='cyl')?'D':'mm';
-    var out='要达到目标拱高 <b>'+Math.round(target)+' μm</b>，在其余参数不变时需 <b>'+label+' ≈ '+need.toFixed(vr==='ICL_size'?2:2)+' '+unit+'</b>。';
-    if(vr==='ICL_size'){
-      // snap to nearest available
-      var nearest=ICL_SIZES.reduce(function(a,b){return Math.abs(b-need)<Math.abs(a-need)?b:a;});
-      var vAt=vaultOf({icl:nearest});
-      out+='<br>最接近的可用尺寸 <b>'+nearest.toFixed(1)+' mm</b> → 预测拱高 <b>'+Math.round(vAt)+' μm</b>。';
-      if(need<12.0||need>13.9) out+='<br><span style="color:#E0A94A">（解值超出常规尺寸范围，目标在当前解剖下可能不可达，可考虑改变植入方位）</span>';
-    } else {
-      var lo={ACD:2.8,WTW:10.8,STS_eff:10.8,cyl:-6}[vr], hi={ACD:3.8,WTW:12.6,STS_eff:13.2,cyl:0}[vr];
-      if(need<lo||need>hi) out+='<br><span style="color:#E0A94A">（解值超出研究/生理常见范围 '+lo+'–'+hi+'，仅供参考；该参数多为患者解剖、不可术中改变）</span>';
-      if(vr==='ACD'||vr==='WTW'||vr==='STS_eff') out+='<br><span style="color:var(--muted)">注：'+label+'为患者解剖参数，通常不可选择；如需调节拱高，实际可控者为 ICL 尺寸与植入方位。</span>';
-    }
-    el('solveOut').innerHTML=out;
-  }
-  el('solveBtn').addEventListener('click',solveVar);
+  // text parsing
+  const labels={acd:'ACD',lt:'LT',stsh:'STS-H',stsv:'STS-V',wtw:'WTW',acv:'ACV',aca:'ACA',ubmAcd:'UBM ACD',al:'AL',cct:'CCT',k1:'K1',k2:'K2',se:'SE',power:'ICL power',age:'年龄',endo:'内皮计数',icl:'ICL size',angle:'方向',toric:'Toric'};
+  function cleanText(t){return t.replace(/[－–—−]/g,'-').replace(/[：]/g,':').replace(/[，]/g,',').replace(/[／]/g,'/').replace(/μm|µm/gi,'um')}
+  function valid(field,v){const lim={acd:[2.3,4.5],lt:[2.5,5.5],stsh:[9.5,14.5],stsv:[9.5,14.5],wtw:[9.5,14],acv:[80,350],aca:[15,65],ubmAcd:[2.3,4.5],al:[20,38],cct:[350,750],k1:[35,55],k2:[35,55],se:[-30,5],power:[1,25],age:[10,90],endo:[1000,5000],icl:[12,14],angle:[0,180]};return !lim[field]||(v>=lim[field][0]&&v<=lim[field][1])}
+  function numsIn(s){return (s.match(/-?\d+(?:\.\d+)?/g)||[]).map(Number)}
+  function addCandidate(key,obj){parsedCandidates[key]=Object.assign({od:null,os:null,generic:null,snippet:'',confidence:'medium'},parsedCandidates[key]||{},obj)}
+  function parsePairLine(lines,key,regexes){for(const line of lines){const rx=regexes.find(r=>r.test(line));if(!rx)continue;rx.lastIndex=0;const m=rx.exec(line);const after=line.slice(m.index+m[0].length);let ns=numsIn(after).filter(v=>valid(key,v));if(ns.length>=2){addCandidate(key,{od:ns[0],os:ns[1],snippet:line,confidence:'high'});return}if(ns.length===1){addCandidate(key,{generic:ns[0],snippet:line,confidence:'medium'});return}}}
+  function parseText(){parsedCandidates={};const text=cleanText($('ocrText').value),lines=text.split(/\n+/).map(x=>x.trim()).filter(Boolean);
+    parsePairLine(lines,'acd',[/\bACD\b/i,/前房深度/]);parsePairLine(lines,'lt',[/\bLT\b/i,/lens\s*thickness/i,/晶状体厚度|晶体厚度/]);parsePairLine(lines,'wtw',[/\bW[-\s]?T[-\s]?W\b/i,/白到白/]);parsePairLine(lines,'acv',[/\bACV\b/i,/前房容积/]);parsePairLine(lines,'aca',[/\bACA\b/i,/房角(?:夹角)?/]);parsePairLine(lines,'al',[/\bAL\b/i,/axial\s*length/i,/眼轴/]);parsePairLine(lines,'cct',[/\bCCT\b/i,/corneal\s*thickness/i,/角膜厚度/]);
+    for(const line of lines){if(/K1\s*[\/\-]\s*K2/i.test(line)){const ns=numsIn(line.replace(/K1\s*[\/\-]\s*K2/i,'')).filter(v=>v>=35&&v<=55);if(ns.length>=4){addCandidate('k1',{od:ns[0],os:ns[2],snippet:line,confidence:'high'});addCandidate('k2',{od:ns[1],os:ns[3],snippet:line,confidence:'high'});break}}}
+    if(!parsedCandidates.k1)parsePairLine(lines,'k1',[/\bK1\b/i]);if(!parsedCandidates.k2)parsePairLine(lines,'k2',[/\bK2\b/i]);parsePairLine(lines,'se',[/\bSE(?:Q)?\b/i,/等效球镜/]);parsePairLine(lines,'age',[/年龄|\bage\b/i]);parsePairLine(lines,'endo',[/内皮(?:计数)?|endothelial/i]);parsePairLine(lines,'ubmAcd',[/UBM[^\n]{0,18}(?:ACD|前房深度)/i]);
+    for(const line of lines){if(/UBM|沟到沟|\bSTS\b/i.test(line)){const after=line.replace(/^.*?(?:UBM|沟到沟|\bSTS\b)/i,'');const ns=numsIn(after).filter(v=>v>=9.5&&v<=14.5);if(ns.length>=4){addCandidate('stsh',{od:ns[0],os:ns[2],snippet:line,confidence:'high'});addCandidate('stsv',{od:ns[1],os:ns[3],snippet:line,confidence:'high'});break}else if(ns.length>=2){addCandidate('stsh',{generic:ns[0],snippet:line,confidence:'medium'});addCandidate('stsv',{generic:ns[1],snippet:line,confidence:'medium'});break}}}
+    for(const line of lines){if(/ICL|collamer|人工晶体/i.test(line)){const sizes=numsIn(line).filter(v=>[12.1,12.6,13.2,13.7].some(x=>Math.abs(v-x)<.05));if(sizes.length>=2)addCandidate('icl',{od:sizes[0],os:sizes[1],snippet:line,confidence:'high'});else if(sizes.length)addCandidate('icl',{generic:sizes[0],snippet:line,confidence:'high'});if(/toric|TICL|散光型/i.test(line))addCandidate('toric',{generic:1,snippet:line,confidence:'high'})}}
+    for(const line of lines){if(/orientation|方向|放置|植入|对准/i.test(line)){const both=/水平|horizontal/i.test(line)&&/垂直|vertical/i.test(line),ns=numsIn(line).filter(v=>v>=0&&v<=180);if(both&&ns.length>=2){addCandidate('angle',{od:Math.min(ns[0]%180,180-ns[0]%180),os:Math.min(ns[1]%180,180-ns[1]%180),snippet:line,confidence:'high'});continue}let val=null;if(/垂直|vertical/i.test(line))val=90;else if(/水平|horizontal/i.test(line))val=0;else{const m=line.match(/(?:对准|axis|方向)[^\d]{0,8}(\d{1,3})/i);if(m){const a=+m[1]%180;val=Math.min(a,180-a)}}if(val!==null)addCandidate('angle',{generic:val,snippet:line,confidence:'medium'})}}
+    renderCandidates();$('parseStatus').textContent=Object.keys(parsedCandidates).length?`识别 ${Object.keys(parsedCandidates).length} 个字段；应用前请核对。`:'未识别到可用字段';$('applyBtn').disabled=!Object.keys(parsedCandidates).length}
+  function renderCandidates(){const keys=['acd','lt','stsh','stsv','wtw','icl','toric','angle','ubmAcd','acv','aca','al','cct','k1','k2','se','age','endo'];const rows=keys.filter(k=>parsedCandidates[k]).map(k=>{const c=parsedCandidates[k],input=(side,val)=>`<input data-key="${k}" data-side="${side}" type="number" step="0.01" value="${val??''}">`;return `<tr><td>${labels[k]||k}<br><span class="confidence">${c.confidence}</span></td><td>${input('od',c.od)}</td><td>${input('os',c.os)}</td><td>${input('generic',c.generic)}</td><td title="${escapeHtml(c.snippet)}">${escapeHtml(c.snippet.slice(0,56))}</td></tr>`});$('candidateBody').innerHTML=rows.length?rows.join(''):'<tr><td colspan="5" class="muted">未识别到可用字段。</td></tr>';document.querySelectorAll('.candidate-table input').forEach(inp=>inp.addEventListener('input',()=>{const c=parsedCandidates[inp.dataset.key];c[inp.dataset.side]=inp.value===''?null:+inp.value}))}
+  function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+  function applyParsed(){const side=$('applyEye').value.toLowerCase();const get=k=>{const c=parsedCandidates[k];return c?(c[side]??c.generic):null};const map={acd:'acd',lt:'lt',stsh:'stsh',stsv:'stsv',wtw:'wtw',angle:'angle'};Object.entries(map).forEach(([k,id])=>{const v=get(k);if(v!==null&&valid(k,+v))setDual(id,+v)});const adv={ubmAcd:'ubmAcd',acv:'acv',aca:'aca',al:'al',cct:'cct',k1:'k1',k2:'k2',se:'se',age:'age',endo:'endo'};Object.entries(adv).forEach(([k,id])=>{const v=get(k);if(v!==null)$(id).value=v});const size=get('icl');if(size!==null){const b=[...$('iclSeg').children].find(x=>Math.abs(+x.dataset.v-size)<.05);if(b)b.click()}const tor=get('toric');if(tor!==null){const b=[...$('toricSeg').children].find(x=>+x.dataset.v===+tor);if(b)b.click()}if(get('stsh')!==null&&get('stsv')!==null)setSource('measured');else if(get('wtw')!==null)setSource('estimated');compute();$('parseStatus').textContent=`已把 ${$('applyEye').value} 的可用字段写入表单；请逐项复核。`}
+  $('parseBtn').addEventListener('click',parseText);$('applyBtn').addEventListener('click',applyParsed);$('ocrText').addEventListener('input',updateCharCount);function updateCharCount(){$('charCount').textContent=$('ocrText').value.length+' chars'}
+  const sample=`前节生物测量报告\n项目 OD OS\nACD (Pentacam) mm 3.20 3.18\nACV mm3 198 194\nACA deg 39.5 38.8\nWTW mm 11.60 11.55\nUBM STS H/V mm 11.80/12.20 11.75/12.16\nLT mm 3.63 3.66\nAL mm 27.05 26.98\nCCT um 529 532\nK1 42.7 42.9\nK2 44.4 44.6\nPlanned ICL Toric 12.6 mm\nOrientation Horizontal 0 deg`;
+  $('sampleTextBtn').addEventListener('click',()=>{$('ocrText').value=sample;updateCharCount();parseText()});
+  $('redactBtn').addEventListener('click',()=>{let t=$('ocrText').value;t=t.replace(/1\d{10}/g,'[PHONE]');t=t.replace(/\b\d{17}[\dXx]\b/g,'[ID]');t=t.replace(/(?:姓名|name)\s*[:：]?\s*[\u4e00-\u9fa5A-Za-z·]{2,20}/gi,'姓名: [REDACTED]');$('ocrText').value=t;updateCharCount()});
 
-  // ---- medical record parser ----
-  function num(re,txt){ var m=txt.match(re); return m?parseFloat(m[1]):null; }
-  function parseRecord(){
-    var t=el('recTxt').value; if(!t.trim()){el('recMsg').textContent='请先粘贴病历文本。';return;}
-    var T=t.replace(/：/g,':').replace(/，/g,',').replace(/[（(]/g,'(').replace(/[)）]/g,')');
-    var got=[];
-    // ACD
-    var acd=num(/(?:ACD|前房深度|前房深)\s*[:=]?\s*(\d\.\d{1,2})/i,T);
-    if(acd&&acd>=2.4&&acd<=4.5){ state.acd=acd; el('acd').value=acd; el('acdN').value=acd.toFixed(2); got.push('ACD='+acd); }
-    // cyl (柱镜/散光, negative)
-    var cyl=num(/(?:柱镜|散光|cyl|CYL)\s*[:=]?\s*(-?\d\.?\d{0,2})/i,T);
-    if(cyl!==null){ cyl=-Math.abs(cyl); if(cyl>=-6&&cyl<=0){ state.cyl=cyl; el('cyl').value=cyl; el('cylN').value=cyl.toFixed(2); got.push('cyl='+cyl); } }
-    // ICL size
-    var icl=num(/(?:ICL[^0-9]{0,6}(?:尺寸|整长|size)?|人工晶体[^0-9]{0,4}尺寸?)\s*[:=]?\s*(1[23]\.\d)/i,T);
-    if(!icl){ var m2=T.match(/\b(12\.1|12\.6|13\.2|13\.7)\b/); if(m2) icl=parseFloat(m2[1]); }
-    if(icl&&icl>=11.5&&icl<=14){ state.icl=icl; el('iclN').value=icl.toFixed(1);
-      [].forEach.call(el('iclSeg').children,function(b){b.classList.toggle('on',parseFloat(b.dataset.v)===icl);}); got.push('ICL='+icl); }
-    // WTW
-    var wtw=num(/(?:WTW|白到白|角膜横径|水平角膜)\s*[:=]?\s*(1[01]\.\d{1,2})/i,T);
-    if(wtw&&wtw>=10&&wtw<=13){ state.wtw=wtw; el('wtwN').value=wtw.toFixed(2); got.push('WTW='+wtw); }
-    // STS h/v : patterns like 沟到沟 11.5/12.3  or STS 11.5,12.3
-    var stsPair=T.match(/(?:STS|沟到沟|沟径|睫状沟)\D{0,4}(1[0-3]\.\d{1,2})\s*[\/,xX×]\s*(1[0-3]\.\d{1,2})/i);
-    if(stsPair){ var h=parseFloat(stsPair[1]),v=parseFloat(stsPair[2]);
-      state.sth=h; state.stv=v; el('sthN').value=h.toFixed(2); el('stvN').value=v.toFixed(2); got.push('STS='+h+'/'+v); }
-    // orientation
-    var vert=null;
-    if(/垂直|竖直|6\s*[-~]\s*12|12\s*[-~]\s*6/.test(T)) vert=1;
-    else if(/水平|横向|3\s*[-~]\s*9|9\s*[-~]\s*3/.test(T)) vert=0;
-    if(vert!==null){ state.vert=vert;
-      [].forEach.call(el('orientSeg').children,function(b){b.classList.toggle('on',parseInt(b.dataset.v,10)===vert);});
-      got.push('方位='+(vert?'垂直':'水平')); }
-    // auto-enable extended if STS or WTW found
-    if((stsPair||wtw)&&!state.ext){ state.ext=true; el('useExt').checked=true;
-      el('advHead').classList.add('open'); el('advBody').classList.add('open'); }
-    compute();
-    el('recMsg').innerHTML = got.length? ('✓ 已识别并填入：'+got.join('、')+'。<span style="color:var(--high)">请务必人工核对。</span>')
-      : '未能识别到可用参数——请检查文本格式（可用 “ACD 3.2，WTW 11.6，沟到沟 11.5/12.3，柱镜 -1.25，ICL 12.6，垂直” 之类写法）。';
-  }
-  el('recBtn').addEventListener('click',parseRecord);
-  el('recClear').addEventListener('click',function(){el('recTxt').value=''; el('recMsg').textContent='';});
+  function summaryObject(){const q=predict();return {generated_at:new Date().toISOString(),model:'ICL one-month vault parsimonious model',research_use_only:true,input_source:sourceMode,inputs:{acd_mm:q.acd,lens_thickness_mm:q.lt,wtw_mm:q.wtw,sts_h_mm:q.h,sts_v_mm:q.v,orientation_deg:q.angle,effective_sts_mm:q.stsEff,icl_size_mm:q.size,toric:!!q.toric},prediction:{vault_1m_um:Math.round(q.y),empirical_80_interval_um:[Math.round(Math.max(0,q.y+RES80.lo)),Math.round(q.y+RES80.hi)],classification:classify(q.y).t},optional_fields:Object.fromEntries(['ubmAcd','acv','aca','al','cct','k1','k2','se','power','age','sex','endo'].map(id=>[id,$(id).value||null]))}}
+  $('copyBtn').addEventListener('click',async()=>{const o=summaryObject(),text=`ICL 术后 1 月拱高研究估计\n预测：${o.prediction.vault_1m_um} μm；经验80%区间：${o.prediction.empirical_80_interval_um.join('–')} μm；分层：${o.prediction.classification}\nACD ${o.inputs.acd_mm} mm；LT ${o.inputs.lens_thickness_mm} mm；STS-H/V ${o.inputs.sts_h_mm.toFixed(2)}/${o.inputs.sts_v_mm.toFixed(2)} mm；WTW ${o.inputs.wtw_mm} mm；ICL ${o.inputs.icl_size_mm} mm；方向 ${o.inputs.orientation_deg}°；${o.inputs.toric?'Toric':'Non-toric'}\n仅供研究，不可独立用于临床决策。`;try{await navigator.clipboard.writeText(text);$('copyBtn').textContent='已复制';setTimeout(()=>$('copyBtn').textContent='复制研究摘要',1400)}catch(e){alert(text)}});
+  $('jsonBtn').addEventListener('click',()=>{const blob=new Blob([JSON.stringify(summaryObject(),null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='icl_vault_research_summary.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)});$('printBtn').addEventListener('click',()=>window.print());
+  $('resetBtn').addEventListener('click',()=>{setDual('acd',3.20);setDual('lt',3.63);setDual('stsh',11.80);setDual('stsv',12.20);setDual('wtw',11.60);setDual('angle',0);[...$('iclSeg').children].find(x=>x.dataset.v==='12.6').click();[...$('toricSeg').children].find(x=>x.dataset.v==='1').click();setSource('measured');document.querySelectorAll('.advanced-grid input').forEach(x=>x.value='');$('sex').value='';$('ocrText').value='';updateCharCount();parsedCandidates={};renderCandidates();$('applyBtn').disabled=true;compute()});
 
   compute();
 })();
