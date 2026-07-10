@@ -50,7 +50,6 @@
   .table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:11.5px}th,td{padding:8px 7px;border-bottom:1px solid var(--line-soft);text-align:right;white-space:nowrap}th{color:var(--muted);font-weight:650;background:var(--panel-2);position:sticky;top:0}th:first-child,td:first-child{text-align:left}.selected-row{background:#e8f3f1}
   .ocr-card{margin-top:18px}.ocr-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:16px}@media(max-width:850px){.ocr-grid{grid-template-columns:1fr}}.drop{border:1.5px dashed #9bb8b4;border-radius:6px;min-height:215px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:16px;background:#f7faf9;position:relative;overflow:hidden}.drop.drag{border-color:var(--petrol);background:#eaf3f1}.drop canvas{max-width:100%;max-height:300px;display:none}.drop .placeholder{font-size:12px;color:var(--muted)}.drop .placeholder b{display:block;color:var(--ink);font-size:14px;margin-bottom:5px}.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.progress{height:7px;background:var(--line-soft);border-radius:6px;overflow:hidden;margin-top:10px}.progress div{height:100%;width:0;background:var(--petrol);transition:width .2s}.status{font-size:11px;color:var(--muted);margin-top:6px;min-height:17px}.privacy{font-size:10.5px;color:var(--muted);margin-top:8px;padding:8px;background:#f4f7f6;border-left:3px solid var(--info)}
   textarea{min-height:180px;font-family:var(--mono);font-size:11px;line-height:1.5;resize:vertical}.ocr-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}.candidate-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin:10px 0}.candidate-actions select{width:auto;min-width:160px}.candidate-table input{width:82px;padding:5px 6px;font-size:11px}.confidence{font-family:var(--mono);font-size:10px;color:var(--muted)}
-  .evidence{margin-top:18px}.evidence .legend{font-size:11px;color:var(--muted);margin-bottom:10px}.badge{display:inline-block;font-size:9.5px;font-weight:650;padding:2px 6px;border-radius:3px;color:#fff}.b-core{background:var(--optimal)}.b-context{background:var(--info)}.b-weak{background:#7c8c8f}.b-no{background:#a76d79}
   .eq{margin-top:18px;background:var(--ink);color:#DCE9E7;border-radius:6px;padding:15px 18px;font-family:var(--mono);font-size:11.5px;line-height:1.75;overflow-x:auto}.eq b{color:#fff}.eq .muted2{color:#86a6a8}
   .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}.disc{margin-top:14px;font-size:11px;color:var(--muted);line-height:1.65}.disc strong{color:var(--ink)}a{color:var(--petrol-deep)}
   @media print{body{padding:0;background:#fff}.wrap{max-width:none}.ocr-card,.toolbar,.notice{display:none}.card{box-shadow:none;break-inside:avoid}details{display:none}}
@@ -219,23 +218,6 @@
   </div>
 </section>
 
-<section class="card evidence">
-  <h2>你这批数据中各变量的作用 · Evidence from the uploaded cohort</h2>
-  <div class="legend">下表为 377 只具有术后第 1 天与第 1 个月拱高的眼。Pearson r 是单变量关联，不代表因果；“加入核心模型后的增益”来自按患者分组的重复 5 折交叉验证。</div>
-  <div class="table-wrap"><table><thead><tr><th>变量</th><th>与 1 月拱高 r</th><th>调整后/预测价值</th><th>在本工具中的处理</th></tr></thead><tbody>
-    <tr><td>ACD（Pentacam）</td><td>+0.451</td><td><span class="badge b-core">核心</span> 独立正向贡献稳定</td><td>进入主公式</td></tr>
-    <tr><td>UBM 前房深度</td><td>+0.467</td><td><span class="badge b-context">小幅增益</span> 加入核心模型约改善 MAE 1.7 μm</td><td>记录与质控；暂不改主公式</td></tr>
-    <tr><td>ICL 尺寸</td><td>+0.388</td><td><span class="badge b-core">核心</span> 固定眼部解剖时尺寸越大，预测拱高越高</td><td>进入主公式与情景比较</td></tr>
-    <tr><td>STS-H / STS-V</td><td>+0.306 / +0.285</td><td><span class="badge b-core">核心组合</span> 与植入方向共同建模明显改善 CV</td><td>合成为方向校正 STS<sub>eff</sub></td></tr>
-    <tr><td>WTW</td><td>+0.368</td><td><span class="badge b-context">代理变量</span> 加入已有 ACD、尺寸、LT、STS 后未改善 CV</td><td>一致性诊断；STS 缺失时仅作回退估算</td></tr>
-    <tr><td>晶状体厚度 LT</td><td>−0.247</td><td><span class="badge b-core">核心</span> 调整后仍为负向贡献</td><td>进入主公式</td></tr>
-    <tr><td>植入方向</td><td>−0.263</td><td><span class="badge b-core">核心机制</span> 由椭圆形沟径和压缩量体现</td><td>通过 θ 改变 STS<sub>eff</sub></td></tr>
-    <tr><td>ACV / ACA</td><td>+0.376 / +0.352</td><td><span class="badge b-context">共线</span> 多数信息与 ACD 重叠；增量很小</td><td>OCR 与病历记录，不进入主公式</td></tr>
-    <tr><td>Toric 状态</td><td>+0.210</td><td><span class="badge b-context">预测关联</span> 可能包含选择偏倚/混杂，不能作因果解释</td><td>进入主公式，但显示警示</td></tr>
-    <tr><td>年龄、性别、K、CCT、AL、内皮</td><td>|r| ≈ 0.12–0.19</td><td><span class="badge b-weak">弱/不稳定</span> 预测增益小或不一致</td><td>仅记录</td></tr>
-    <tr><td>球镜、SE、ICL power</td><td>|r| ≤ 0.052</td><td><span class="badge b-no">无明显增益</span> 本队列中与 1 月拱高几乎无单变量线性关联</td><td>仅记录</td></tr>
-  </tbody></table></div>
-</section>
 
 <div class="eq">
   <b>主模型</b>　Vault<sub>1m</sub>(μm) = <span class="muted2">−959.8149</span> + <b>198.8547</b>×ACD + <b>189.3997</b>×ICL size + <b>45.9887</b>×Toric − <b>114.9899</b>×STS<sub>eff</sub> − <b>99.3845</b>×LT<br>
