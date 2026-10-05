@@ -202,6 +202,7 @@ svg.chart{display:block;width:100%;height:auto;background:#fff;border:1px solid 
 
 <!-- ==== PREDICTION ==== -->
 <div class="tab-section on" id="tab-predict" role="tabpanel">
+  <div class="flag" id="medDisclaimer" role="note" style="margin:0 0 12px;font-size:11.5px"></div>
   <div id="eyesGrid" class="eyes-grid"></div>
   <div class="section-grid">
     <section class="card"><h2 id="h-bilat">双眼合并小结</h2><div id="bilateralSummary"></div>
@@ -396,13 +397,17 @@ const DATASET=/*data*/[{"pg": "2022:3", "year": 2022, "eye": "OD", "age": 18.0, 
 const MODEL_VERSION='2.0 (1-month, 5-var, empirical-interval)';
 const BUILD_DATE='2026-07-15';
 const CHANGELOG=[
+ {v:'2.0.1',d:'2026-10',zh:'应用层修复（模型系数未改）：WTW 回退开关生效；输入为空/超范围时拒绝预测；bootstrap 系数带改为围绕锁定模型中心；经验区间说明更正为样本内残差；报告/病例日期改用当天日期；新增 ACD/ECD/年龄安全提示（国家卫健委 2024 规范、FDA EVO 标签）、Zhu 2021 已发表公式交叉参考、亚组偏差列、医疗免责声明与参考文献。',en:'App-level fixes (model coefficients unchanged): WTW-fallback toggle now takes effect; empty/out-of-range inputs block prediction; bootstrap coefficient band re-centred on the locked model; empirical-interval wording corrected to in-sample residuals; report/case dates use the current date; added ACD/ECD/age safety notices (China NHC 2024 standard, FDA EVO labeling), Zhu 2021 published-formula cross-check, subgroup bias column, medical disclaimer and references.'},
  {v:'2.0',d:'2026-07-15',zh:'切换为术后1个月主终点的5变量模型；加入经验/共形区间、双概率、系数不确定性、OOD可靠性分级、稳健排序、随访闭环、设备模板OCR、队列验证与再校准、报告与自检。',en:'Switched to the 1-month 5-variable model; added empirical/conformal intervals, dual probabilities, coefficient uncertainty, OOD reliability grading, robust ranking, follow-up loop, template OCR, cohort validation and recalibration, reporting and self-tests.'},
  {v:'1.0',d:'2026-early',zh:'早期版本：点预测、正态区间、三类概率、尺寸/方位排序、双眼、OCR、批量。',en:'Early build: point prediction, normal intervals, three-class probabilities, size/orientation ranking, bilateral, OCR, batch.'}
 ];
 const $=id=>document.getElementById(id);
+const todayISO=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const SIZES=[12.1,12.6,13.2,13.7], ORIENTS=[0,90], SCALE_MAX=1300, Z80=1.28155, Z95=1.95996;
 const COEF=EMBED.coef;
+// Hard plausibility limits: values outside are treated as entry/unit errors and block prediction (not a clinical eligibility range).
+const HARD={acd:[2.3,4.5],lt:[2.5,5.5],stsh:[9.5,14.5],stsv:[9.5,14.5],wtw:[9.5,14],angle:[0,180]};
 const EARLY_LOGIT={i:-17.65784,acd:1.95783,size:2.23708,toric:.73635,sts:-1.07163,lt:-1.37485};
 
 // cohort stats from embedded empirical arrays
@@ -457,11 +462,18 @@ function estSTS(w){return{h:2.6272317706+0.7887754050*w,v:2.7803584299+0.8145421
 function effSTS(h,v,ang){const t=ang*Math.PI/180;return 1/Math.sqrt(Math.cos(t)**2/h**2+Math.sin(t)**2/v**2)}
 function resolveEye(e){let h=+e.stsh,v=+e.stsv,src='measured';
   const badH=!isFinite(h)||h<=0,badV=!isFinite(v)||v<=0;
-  if(badH||badV){const est=estSTS(+e.wtw);h=est.h;v=est.v;src='estimated'}
+  if(e.source==='estimated'||badH||badV){const est=estSTS(+e.wtw);h=est.h;v=est.v;src='estimated'}
   const ang=isFinite(+e.angle)?+e.angle:0;
   return{h,v,ang,stsEff:effSTS(h,v,ang),src}}
 function predictY(acd,size,toric,stsEff,lt){return COEF.i+COEF.acd*acd+COEF.size*size+COEF.toric*toric+COEF.sts*stsEff+COEF.lt*lt}
-function bootYs(acd,size,toric,stsEff,lt){return EMBED.boot.map(b=>b[0]+b[1]*acd+b[2]*size+b[3]*toric+b[4]*stsEff+b[5]*lt)}
+const BREFIT=EMBED.betaRefit;
+function linY(b,acd,size,toric,stsEff,lt){return b[0]+b[1]*acd+b[2]*size+b[3]*toric+b[4]*stsEff+b[5]*lt}
+// The 300 bootstrap draws scatter around the in-sample refit (betaRefit), not around the locked COEF, so raw draws can exclude the
+// locked point prediction. Transplant the bootstrap deviations (draw − refit) onto the locked prediction instead.
+function bootDev(b,acd,size,toric,stsEff,lt){return linY(b,acd,size,toric,stsEff,lt)-linY(BREFIT,acd,size,toric,stsEff,lt)}
+function bootYs(acd,size,toric,stsEff,lt){const y0=predictY(acd,size,toric,stsEff,lt);return EMBED.boot.map(b=>y0+bootDev(b,acd,size,toric,stsEff,lt))}
+// Published cross-check: Zhu QJ et al. BMC Ophthalmol 2021;21:199 (UBM STS, horizontal fixation, ICL V4c, 1-month vault). Fixed published coefficients.
+function zhuVault(h,v,lt,size){return -1369.05+657.121*size-287.408*h-432.497*lt-137.33*v}
 function earlyLogit(acd,size,toric,stsEff,lt){return logistic(EARLY_LOGIT.i+EARLY_LOGIT.acd*acd+EARLY_LOGIT.size*size+EARLY_LOGIT.toric*toric+EARLY_LOGIT.sts*stsEff+EARLY_LOGIT.lt*lt)}
 
 function mahaSq(vec){const mu=EMBED.mahaMean,inv=EMBED.mahaInv,d=vec.map((x,i)=>x-mu[i]);let s=0;
@@ -505,8 +517,9 @@ function predictEye(eye,over){
   return predictRaw(e)}
 function predictRaw(e){
   const ood=oodInfo(e),r=ood.resolved;
-  if(!isFinite(+e.acd)||!isFinite(+e.size)||!isFinite(+e.lt))
-    return{invalid:true,missing:ood.missing,ood,resolved:r,e};
+  const badRange=rangeErrors(e,r);
+  if(!isFinite(+e.acd)||!isFinite(+e.size)||!isFinite(+e.lt)||!isFinite(r.stsEff)||badRange.length)
+    return{invalid:true,missing:ood.missing.concat(!isFinite(r.stsEff)?[r.src==='estimated'?'wtw':'stsh']:[]),badRange,ood,resolved:r,e};
   const y=predictY(+e.acd,+e.size,+e.toric,r.stsEff,+e.lt);
   // scale = OOD widening factor (sigmaEff / sigmaBase). At baseline (grade A) it is 1, so PIe/emp
   // probabilities are the RAW empirical residual quantiles; extrapolation widens both by the same factor.
@@ -524,6 +537,25 @@ function predictRaw(e){
   return{invalid:false,e,resolved:r,ood,y,sigma:sig,PIn,PIe,cn,ce,pTn,pTe,
     boot:{lo:quantileSorted(bys,.10),hi:quantileSorted(bys,.90),med:quantileSorted(bys,.5)},
     early,unstable,stsEff:r.stsEff}}
+function rangeErrors(e,r){const out=[];const chk=(k,v)=>{const l=HARD[k];if(l&&isFinite(v)&&(v<l[0]||v>l[1]))out.push(k)};
+  chk('acd',+e.acd);chk('lt',+e.lt);chk('angle',+e.angle);
+  if(r.src==='estimated')chk('wtw',+e.wtw);else{chk('stsh',+e.stsh);chk('stsv',+e.stsv)}
+  if(isFinite(+e.size)&&!SIZES.some(x=>Math.abs(x-(+e.size))<1e-6))out.push('size');
+  return out}
+// Safety / eligibility notices (advisory only; never change the prediction).
+// Sources: China NHC 有晶状体眼后房型人工晶状体植入术操作规范（2024年版）; FDA EVO/EVO+ Visian ICL labeling P030016/S035 (2022).
+const FDA_ECD=[[21,25,[3875,3800,3250]],[26,30,[3425,3375,2900]],[31,35,[3025,2975,2625]],[36,40,[2675,2625,2350]],[41,45,[2350,2325,2100]],[46,200,[2075,2050,1900]]];
+function safetyFlags(e){const out=[],acd=+e.acd,o=e.optional||{},age=parseFloat(o.age),ecd=parseFloat(o.endo);
+  if(isFinite(acd)&&acd<2.8)out.push({lv:'warn',t:L('ACD '+acd.toFixed(2)+' mm < 2.80 mm：低于国家卫健委《有晶状体眼后房型人工晶状体植入术操作规范（2024年版）》的一般要求，需综合评估并充分知情同意。','ACD '+acd.toFixed(2)+' mm < 2.80 mm: below the general requirement of the China NHC 2024 phakic posterior-chamber IOL standard; requires comprehensive evaluation and informed consent.')});
+  else if(isFinite(acd)&&acd<3.0)out.push({lv:'info',t:L('ACD < 3.00 mm：美国 FDA EVO/EVO+ 标签以 true ACD（角膜内皮至晶状体前表面）< 3.00 mm 为禁忌；请确认 ACD 的测量定义。','ACD < 3.00 mm: the US FDA EVO/EVO+ labeling contraindicates true ACD (endothelium to anterior lens) < 3.00 mm; confirm which ACD definition was measured.')});
+  if(isFinite(ecd)&&ecd<2000)out.push({lv:'warn',t:L('角膜内皮计数 '+Math.round(ecd)+' < 2000 个/mm²：不满足国家卫健委 2024 规范要求。','Endothelial cell density '+Math.round(ecd)+' < 2000 cells/mm²: does not meet the China NHC 2024 requirement.')});
+  if(isFinite(ecd)&&isFinite(age)&&age>=21&&isFinite(acd)&&acd>=3.0){const row=FDA_ECD.find(r=>age>=r[0]&&age<=r[1]);if(row){const col=acd>=3.5?2:acd>=3.2?1:0,min=row[2][col];
+    if(ecd<min)out.push({lv:'info',t:L('按 FDA EVO 标签年龄/ACD 表，该年龄段最低 ECD 为 '+min+' 个/mm²，当前 '+Math.round(ecd)+'。','Per the FDA EVO labeling age/ACD table, minimum ECD for this age band is '+min+' cells/mm²; current '+Math.round(ecd)+'.')})}}
+  if(isFinite(age)&&age<18)out.push({lv:'warn',t:L('年龄 < 18 岁：国家卫健委 2024 规范适应证为 18 周岁及以上（特殊情况需综合评估）。','Age < 18: the China NHC 2024 standard indicates age ≥ 18 (exceptions need comprehensive evaluation).')});
+  else if(isFinite(age)&&(age<21||age>45))out.push({lv:'info',t:L('年龄超出美国 FDA EVO 标签适应证 21–45 岁。','Age outside the US FDA EVO labeled indication of 21–45 years.')});
+  if(isFinite(+e.angle)&&Math.abs(((+e.angle%180)+180)%180-90)<45)out.push({lv:'info',t:L('非水平（接近垂直）植入：同一患者随机对照研究中垂直固定较水平固定拱高约低 150 μm（Ouchi 2025, Sci Rep）；本模型通过 STS_eff 部分反映方位效应，研究页亚组“偏差”列显示残余偏差。','Near-vertical fixation: in a within-patient randomized study vertical fixation gave ~150 μm lower vault than horizontal (Ouchi 2025, Sci Rep); this model captures orientation only via STS_eff — see the subgroup “bias” column for residual bias.')});
+  return out}
+function flagsHTML(fs){return fs.map(f=>`<div class="${f.lv==='warn'?'flag':'crosscheck'}">${f.lv==='warn'?'⚠ ':'ℹ '}${f.t}</div>`).join('')}
 function classNormal(y,s){const low=normCDF((250-y)/s),high=1-normCDF((750-y)/s);return{low,high,opt:Math.max(0,1-low-high)}}
 function classEmp(y,scale){const low=empCDF(RESID,(250-y)/scale),high=1-empCDF(RESID,(750-y)/scale);return{low,high,opt:Math.max(0,1-low-high)}}
 function classOf(y){if(y<250)return{txt:L('低拱高','Low'),color:'var(--low)'};if(y<=750)return{txt:L('理想区间','Ideal'),color:'var(--optimal)'};return{txt:L('高拱高','High'),color:'var(--high)'}}
@@ -580,8 +612,8 @@ function meterHTML(p){const wl=250/SCALE_MAX*100,wo=500/SCALE_MAX*100,wh=550/SCA
 function field(eye,key){const e=state.eyes[eye],F=FIELDS[key],v=e[key];
   return `<div class="field"><div class="flabel"><span class="name">${fname(key)} <span class="unit">· ${F.unit}</span></span>
     <span class="val" data-val="${eye}-${key}">${fmt(v,key==='angle'?0:2)}${key==='angle'?'°':''}</span></div>
-    <div class="dual"><input type="range" aria-label="${fname(key)}" data-eye="${eye}" data-key="${key}" min="${F.min}" max="${F.max}" step="${F.step}" value="${v}">
-    <input type="number" aria-label="${fname(key)}" data-eye="${eye}" data-key="${key}" min="${F.min}" max="${F.max}" step="${F.step}" value="${v}"></div>
+    <div class="dual"><input type="range" aria-label="${fname(key)}" data-eye="${eye}" data-key="${key}" min="${F.min}" max="${F.max}" step="${F.step}" value="${isFinite(v)?v:''}">
+    <input type="number" aria-label="${fname(key)}" data-eye="${eye}" data-key="${key}" min="${F.min}" max="${F.max}" step="${F.step}" value="${isFinite(v)?v:''}"></div>
     <div class="caps"><span>${F.min}</span><span>${COHORT[key]?L('队列','cohort')+' '+fmt(COHORT[key].min,key==='size'?1:2)+'–'+fmt(COHORT[key].max,key==='size'?1:2):''}</span><span>${F.max}</span></div></div>`}
 
 function ellipseSVG(p){const r=p.resolved,cx=90,cy=76,sc=7.6; // mm->px (fits a ~14mm structure into the left half of the 300x150 viewBox)
@@ -625,7 +657,7 @@ function eyeCard(eye){const e=state.eyes[eye],p=predictEye(eye),show=eye==='OD'|
   const head=`<div class="eye-head"><span class="eye-badge">${eye}</span><h3>${eye==='OD'?L('右眼','Right eye'):L('左眼','Left eye')}</h3>
     <span class="mini-status">${p.invalid?L('缺少必需变量','missing inputs'):'σeff '+Math.round(p.sigma)+' μm · Maha P'+Math.round(p.ood.mahaPct)}</span></div>`;
   const inputs=`<div class="input-pane no-print">
-    ${field(eye,'acd')}${field(eye,'lt')}
+    ${field(eye,'acd')}<div class="source-note" style="color:var(--muted);margin:-8px 0 10px">${L('ACD 定义需与模型开发数据一致；FDA 标签安全阈值使用 true ACD（角膜内皮起算）。','ACD definition must match the development data; FDA labeling thresholds use true ACD (from endothelium).')}</div>${field(eye,'lt')}
     <div class="field"><div class="flabel"><span class="name">${L('沟径来源','Sulcus source')}</span><span class="val">${e.source==='measured'?L('UBM 实测','UBM measured'):L('WTW 回退','WTW fallback')}</span></div>
       <div class="seg two" data-seg="source" data-eye="${eye}"><button data-v="measured" class="${e.source==='measured'?'on':''}">${L('UBM 沟径','UBM STS')}</button><button data-v="estimated" class="${e.source==='estimated'?'on':''}">${L('WTW→沟径','WTW→STS')}</button></div>
       ${e.source==='estimated'?`<div class="source-note">⚠ ${L('沟径为回归推得，非实测','STS regression-estimated, not measured')}</div>`:''}</div>
@@ -641,7 +673,7 @@ function eyeCard(eye){const e=state.eyes[eye],p=predictEye(eye),show=eye==='OD'|
       <label>${L('性别','Sex')}<select data-opt="sex" data-eye="${eye}"><option value=""></option><option value="female" ${e.optional.sex==='female'?'selected':''}>${L('女','Female')}</option><option value="male" ${e.optional.sex==='male'?'selected':''}>${L('男','Male')}</option></select></label>
     </div></details></div>`;
   let result;
-  if(p.invalid){result=`<div class="result-pane"><div class="flag">⚠ ${L('缺少必需变量：','Missing required inputs: ')}${p.missing.map(k=>fname(k)).join(', ')}</div></div>`}
+  if(p.invalid){result=`<div class="result-pane">${p.missing.length?`<div class="flag">⚠ ${L('缺少必需变量：','Missing required inputs: ')}${p.missing.map(k=>fname(k)).join(', ')}</div>`:''}${(p.badRange||[]).length?`<div class="flag">⚠ ${L('超出允许范围（疑似单位/小数点错误），已停止预测：','Out of plausible range (unit/decimal error?) — prediction withheld: ')}${p.badRange.map(k=>fname(k)+(HARD[k]?' ['+HARD[k][0]+'–'+HARD[k][1]+']':'')).join(', ')}</div>`:''}${flagsHTML(safetyFlags(e))}</div>`}
   else{const cls=classOf(p.y);
     result=`<div class="result-pane">
       <div class="readout"><div class="big">${Math.round(p.y)}<span class="u"> μm</span></div><span class="chip" style="background:${cls.color}">${cls.txt}</span>${gradeBadge(p.ood.grade)}</div>
@@ -656,7 +688,10 @@ function eyeCard(eye){const e=state.eyes[eye],p=predictEye(eye),show=eye==='OD'|
       <div class="target-box"><span>${L('目标区','Target')} ${state.targetLow}–${state.targetHigh}</span><b>${pct(p.pTn)}<span class="src-tag"> / ${L('经验','emp')} ${pct(p.pTe)}</span></b></div>
       ${p.unstable?`<div class="flag">⚠ ${L('正态与经验概率差异较大，概率不稳定——按区间与可靠性等级判读，勿当作确切发生率。','Normal vs empirical probabilities diverge — treat as unstable; read intervals + reliability grade, not exact rates.')}</div>`:''}
       ${p.ood.reasons.length?`<div class="flag">${L('可靠性','Reliability')} ${p.ood.grade}: ${p.ood.reasons.join('；')}</div>`:''}
+      ${p.y<0?`<div class="flag">⚠ ${L('预测值为负：线性模型外推，数值无物理意义，提示拱高极低风险。','Negative prediction: linear-model extrapolation with no physical meaning; indicates very-low-vault risk.')}</div>`:''}
+      ${flagsHTML(safetyFlags(e))}
       <div class="crosscheck">${L('早期(第1天)高拱高 logistic 交叉提示','Early day-1 high-vault logistic cross-check')}: <strong>${pct(p.early)}</strong> <span class="src-tag">(${L('不同终点，AUROC≈0.81，仅参考','different endpoint, AUROC≈0.81, reference only')})</span></div>
+      ${zhuHTML(p)}
       <div class="schematic">${ellipseSVG(p)}</div>
       <div class="mini-grid"><div class="mini-cell"><span>STS-H − WTW</span><b>${fmt(p.resolved.h-+e.wtw,2)} mm</b></div><div class="mini-cell"><span>STS-V − WTW</span><b>${fmt(p.resolved.v-+e.wtw,2)} mm</b></div><div class="mini-cell"><span>ICL − STS_eff</span><b>${fmt(+e.size-p.stsEff,2)} mm</b></div></div>
       <div class="result-actions no-print"><button class="btn primary small" data-pin="${eye}">${L('钉住方案','Pin plan')}</button><button class="btn ghost small" data-copy-eye="${eye}">${L('复制本眼','Copy eye')}</button></div>
@@ -665,13 +700,18 @@ function eyeCard(eye){const e=state.eyes[eye],p=predictEye(eye),show=eye==='OD'|
         ${scenarioMatrix(eye)}</details></div>`}
   return `<section class="card eye-card" data-eye-card="${eye}" style="display:${show?'block':'none'}">${head}<div class="eye-body">${inputs}${result}</div></section>`}
 
+function zhuHTML(p){const r=p.resolved,e=p.e;if(r.src!=='measured')return '';
+  const z=zhuVault(r.h,r.v,+e.lt,+e.size),horiz=Math.abs(((+e.angle%180)+180)%180)<1e-9||Math.abs(((+e.angle%180)+180)%180-180)<1e-9;
+  return `<div class="crosscheck">${L('已发表公式交叉参考 Zhu 2021（UBM STS-H/V + LT + ICL 尺寸）','Published-formula cross-check Zhu 2021 (UBM STS-H/V + LT + ICL size)')}: <strong>${Math.round(z)} μm</strong>
+    <span class="src-tag">(${L('BMC Ophthalmol 2021;21:199；V4c、水平植入、Pentacam 1 个月拱高；2022 年 925 眼前瞻验证 95% LoA 约 −339 至 +352 μm','BMC Ophthalmol 2021;21:199; V4c, horizontal fixation, Pentacam 1-month vault; 2022 prospective 925-eye validation 95% LoA ≈ −339 to +352 μm')}${isFinite(ZHU_BIAS.h)?L('；在本内置队列水平眼上平均偏差（实测−公式）'+(ZHU_BIAS.h>=0?'+':'')+Math.round(ZHU_BIAS.h)+' μm，n='+ZHU_BIAS.n,'; mean bias on embedded-cohort horizontal eyes (observed−formula) '+(ZHU_BIAS.h>=0?'+':'')+Math.round(ZHU_BIAS.h)+' μm, n='+ZHU_BIAS.n):''})</span>
+    ${horiz?'':`<div class="src-tag" style="color:var(--high)">${L('当前为非水平植入：该公式基于水平植入建立，不适用。','Current plan is non-horizontal: this formula was derived for horizontal fixation and does not apply.')}</div>`}</div>`}
 function scenarioMatrix(eye){return `<div class="table-wrap" style="margin-top:8px"><table><thead><tr><th>ICL</th>${[0,30,60,90].map(a=>`<th>${a}°</th>`).join('')}</tr></thead><tbody>${SIZES.map(s=>`<tr><td>${s}</td>${[0,30,60,90].map(a=>{const q=predictEye(eye,{size:s,angle:a});return `<td>${q.invalid?'—':Math.round(q.y)}</td>`}).join('')}</tr>`).join('')}</tbody></table></div>`}
 
 function renderPredict(){$('eyesGrid').className='eyes-grid'+(state.bilateral?'':' single');
   $('eyesGrid').innerHTML=eyeCard('OD')+eyeCard('OS');bindEyeEvents();renderBilateral();renderCohort()}
 function bindEyeEvents(){
   document.querySelectorAll('[data-eye][data-key]').forEach(el=>{
-    el.addEventListener('input',ev=>{const eye=ev.target.dataset.eye,key=ev.target.dataset.key,v=+ev.target.value;state.eyes[eye][key]=v;
+    el.addEventListener('input',ev=>{const eye=ev.target.dataset.eye,key=ev.target.dataset.key,raw=String(ev.target.value).trim(),v=raw===''?NaN:+raw;state.eyes[eye][key]=v;
       document.querySelectorAll(`[data-eye="${eye}"][data-key="${key}"]`).forEach(p=>{if(p!==ev.target)p.value=v});
       const lab=document.querySelector(`[data-val="${eye}-${key}"]`);if(lab)lab.textContent=fmt(v,key==='angle'?0:2)+(key==='angle'?'°':'')});
     el.addEventListener('change',renderActive)});
@@ -697,8 +737,8 @@ function renderCohort(){const eyes=state.bilateral?['OD','OS']:['OD'];
       <div class="extrap">${p.invalid?L('输入不完整。','Inputs incomplete.'):(p.ood.reasons.length?'⚠ '+p.ood.reasons.join('；')+'。'+L('区间已按外推加宽。','Interval widened for extrapolation.'):L('参数组合位于队列常见区域；仍不代表可直接临床部署。','Inputs are within the common cohort region; not a transportability claim.'))}</div></div>`}).join('')}
 
 // ===== equation / footer / static localization =====
-function updateEquation(){$('equationBox').innerHTML=`<b>Vault<sub>1m</sub></b> = <span class="muted">${COEF.i.toFixed(2)}</span> + ${COEF.acd.toFixed(2)}×ACD + ${COEF.size.toFixed(2)}×ICL + ${COEF.toric.toFixed(2)}×Toric ${COEF.sts.toFixed(2)}×STS<sub>eff</sub> ${COEF.lt.toFixed(2)}×LT<br><b>STS<sub>eff</sub></b> = 1 / √(cos²θ / STS-H² + sin²θ / STS-V²) &nbsp; <span class="muted">${L('θ：水平=0°，垂直=90°','θ: horizontal=0°, vertical=90°')}</span><br><span class="muted">${L('WTW 回退','WTW fallback')}</span> STS-H ≈ 2.627 + 0.789×WTW; STS-V ≈ 2.780 + 0.815×WTW`;
-  $('globalDisc').innerHTML=`<strong>${L('用途限制：','Limitations: ')}</strong>${L('本页面为单中心回顾性 1 个月拱高模型的研究实现。三类概率依赖残差分布假设；经验区间来自内置队列交叉验证残差；排序为同模型反事实；早期 logistic 为不同终点的交叉提示。临床部署前仍需独立外部验证、局部校准与前瞻性影响研究，且不可替代术者判断。','Research implementation of a single-centre retrospective 1-month vault model. Class probabilities rely on the residual distribution; empirical intervals use the embedded cohort residuals; rankings are model counterfactuals; the early logistic is a different-endpoint cross-check. Independent external validation, local recalibration and prospective evaluation remain necessary; it does not replace surgeon judgment.')}`}
+function updateEquation(){$('equationBox').innerHTML=`<b>Vault<sub>1m</sub></b> = <span class="muted">${COEF.i.toFixed(2)}</span> + ${COEF.acd.toFixed(2)}×ACD + ${COEF.size.toFixed(2)}×ICL + ${COEF.toric.toFixed(2)}×Toric ${COEF.sts.toFixed(2)}×STS<sub>eff</sub> ${COEF.lt.toFixed(2)}×LT<br><b>STS<sub>eff</sub></b> = 1 / √(cos²θ / STS-H² + sin²θ / STS-V²) &nbsp; <span class="muted">${L('θ：水平=0°，垂直=90°','θ: horizontal=0°, vertical=90°')}</span><br><span class="muted">${L('WTW 回退','WTW fallback')}</span> STS-H ≈ 2.627 + 0.789×WTW; STS-V ≈ 2.780 + 0.815×WTW<br><span class="muted">${L('交叉参考（已发表）','Cross-check (published)')} Zhu 2021:</span> Vault = −1369.05 + 657.121×ICL − 287.408×STS-H − 432.497×LT − 137.33×STS-V <span class="muted">(BMC Ophthalmol 2021;21:199)</span>`;
+  $('globalDisc').innerHTML=`<strong>${L('用途限制：','Limitations: ')}</strong>${L('仅供科研与临床参考，不构成医疗建议；ICL 尺寸与方位最终由手术医生根据完整检查决定。本页面为单中心回顾性 1 个月拱高模型的研究实现。三类概率依赖残差分布假设；经验区间来自内置队列交叉验证残差；排序为同模型反事实；早期 logistic 为不同终点的交叉提示。临床部署前仍需独立外部验证、局部校准与前瞻性影响研究，且不可替代术者判断。','For research and clinical reference only — not medical advice; ICL size and orientation are decided by the operating surgeon after a complete examination. Research implementation of a single-centre retrospective 1-month vault model. Class probabilities rely on the residual distribution; empirical intervals use the embedded cohort residuals; rankings are model counterfactuals; the early logistic is a different-endpoint cross-check. Independent external validation, local recalibration and prospective evaluation remain necessary; it does not replace surgeon judgment.')}`}
 function updatePrintFooter(){$('printFooter').textContent=`ICL 1-month vault research model v${MODEL_VERSION} · ${BUILD_DATE} · research use only, not a medical device.`}
 
 const STATIC={appTitle:['ICL 术后拱高预测','ICL Postoperative Vault Prediction'],appSub:['术后 1 个月拱高 · 概率化决策支持','1-month vault · probability-aware decision support'],
@@ -718,6 +758,7 @@ const STATIC={appTitle:['ICL 术后拱高预测','ICL Postoperative Vault Predic
  'h-report-cfg':['报告配置','Report configuration'],'l-reportType':['报告类型','Report type'],'l-reportLang':['报告语言','Report language'],'l-reportRedact':['打印前隐藏身份信息','Redact before printing'],'l-reportSign':['显示签名/审核栏','Show signature/audit block'],
  printBtn:['打印 / 另存 PDF','Print / save PDF'],exportJsonBtn:['导出 JSON','Export JSON'],exportCsvBtn:['导出 CSV','Export CSV'],importJsonBtn:['导入 JSON','Import JSON'],qrBtn:['生成分享二维码','Generate share QR'],
  'h-priv':['隐私与数据','Privacy & data'],'h-tests':['内置自检 / 单元测试','Built-in self-tests'],runTestsBtn:['运行全部自检','Run all self-tests'],'h-ver':['模型版本与变更记录','Model version & changelog'],'h-a11y':['显示 / 无障碍','Display / accessibility'],
+ medDisclaimer:['⚠ 仅供科研与临床参考，不构成医疗建议或自动选片；ICL 尺寸、方位与是否手术由手术医生结合完整术前检查最终决定。','⚠ For research and clinical reference only — not medical advice or autonomous sizing. ICL size, orientation and candidacy are decided by the operating surgeon after a complete preoperative examination.'],
  'mm-title':['模型说明卡','Model card'],'cm-title':['病例随访记录','Case follow-up record']};
 function applyLang(){document.documentElement.lang=state.lang==='zh'?'zh-CN':'en';
   for(const id in STATIC){const el=$(id);if(el)el.textContent=L(STATIC[id][0],STATIC[id][1])}
@@ -758,7 +799,7 @@ function planStability(eye,combos){ // fraction of bootstrap draws where each co
   const tLo=Math.min(state.targetLow,state.targetHigh),tHi=Math.max(state.targetLow,state.targetHigh);
   for(let d=0;d<EMBED.boot.length;d++){let best=-1,bi=0;
     for(let c=0;c<combos.length;c++){const cc=combos[c],b=EMBED.boot[d];
-      const y=b[0]+b[1]*cc.acd+b[2]*cc.size+b[3]*cc.toric+b[4]*cc.stsEff+b[5]*cc.lt;
+      const y=predictY(cc.acd,cc.size,cc.toric,cc.stsEff,cc.lt)+bootDev(b,cc.acd,cc.size,cc.toric,cc.stsEff,cc.lt);
       const pt=normCDF((tHi-y)/cc.sigma)-normCDF((tLo-y)/cc.sigma);
       if(pt>best){best=pt;bi=c}}
     tally[bi]++}
@@ -863,7 +904,7 @@ function renderLongChart(){const eyes=state.bilateral?['OD','OS']:['OD'];const W
   const xs=[1,30,90,180],xmax=180;const X=x=>pad+Math.log(x)/Math.log(xmax)*(W-2*pad);const ymax=1000,Y=y=>H-pad-clamp(y,0,ymax)/ymax*(H-2*pad);
   const cols={OD:'#0E5A63',OS:'#B85570'};let g='';
   // cohort reference (day1~611, m1~381, m6~361)
-  const ref=[[1,611],[30,381],[180,361]];g+=`<path d="${ref.map((p,i)=>(i?'L':'M')+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1)).join(' ')}" fill="none" stroke="#C7D5D3" stroke-width="1.5" stroke-dasharray="4 3"/>`;
+  const mref=k=>{const a=DATASET.map(r=>r[k]).filter(v=>v!=null);return a.reduce((s,x)=>s+x,0)/a.length};const ref=[[1,mref('vEarly')],[30,mref('v1m')],[180,mref('v6m')]];g+=`<path d="${ref.map((p,i)=>(i?'L':'M')+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1)).join(' ')}" fill="none" stroke="#C7D5D3" stroke-width="1.5" stroke-dasharray="4 3"/>`;
   eyes.forEach(eye=>{const p=predictEye(eye);if(p.invalid)return;const e=state.eyes[eye];const fan=projFan(p.y,p.sigma);
     const proj=[[1,fan.d1.v],[30,fan.m1.v],[180,fan.m6.v]];
     g+=`<path d="${proj.map((q,i)=>(i?'L':'M')+X(q[0]).toFixed(1)+' '+Y(q[1]).toFixed(1)).join(' ')}" fill="none" stroke="${cols[eye]}" stroke-width="1.4" stroke-dasharray="2 2" opacity=".7"/>`;
@@ -875,7 +916,7 @@ function renderLongChart(){const eyes=state.bilateral?['OD','OS']:['OD'];const W
   $('longChart').innerHTML=`<svg viewBox="0 0 ${W} ${H}" class="chart">${yTicks}${g}${xTicks}</svg><div class="legend"><span><i style="background:#0E5A63"></i>OD</span><span><i style="background:#B85570"></i>OS</span><span><i style="background:#C7D5D3"></i>${L('队列均值','cohort mean')}</span><span>${L('虚线=模型投影，实线=实测','dashed=projection, solid=observed')}</span></div>`}
 
 function snapshotCase(){const eyes=state.bilateral?['OD','OS']:['OD'];const preds={};eyes.forEach(e=>{const p=predictEye(e);preds[e]=p.invalid?null:{y:p.y,pTn:p.pTn,grade:p.ood.grade,lo80:p.PIn.lo80,hi80:p.PIn.hi80}});
-  return{id:uid(),label:'',date:BUILD_DATE,modelVersion:MODEL_VERSION,bilateral:state.bilateral,target:[state.targetLow,state.targetHigh],eyes:JSON.parse(JSON.stringify(Object.fromEntries(eyes.map(e=>[e,state.eyes[e]])))),pred:preds}}
+  return{id:uid(),label:'',date:todayISO(),modelVersion:MODEL_VERSION,bilateral:state.bilateral,target:[state.targetLow,state.targetHigh],eyes:JSON.parse(JSON.stringify(Object.fromEntries(eyes.map(e=>[e,state.eyes[e]])))),pred:preds}}
 function saveCase(){const c=snapshotCase();c.label=window.prompt(L('病例标签（匿名，勿填姓名）','Case label (anonymous, no names)'),'C'+(state.cases.length+1))||('C'+(state.cases.length+1));
   // strip potential identifiers
   state.cases.push(c);if(state.activeTab==='followup')renderCaseLib();else switchTab('followup')}
@@ -1003,7 +1044,8 @@ function metrics(pairs){const n=pairs.length;if(!n)return null;const err=pairs.m
   const ps=pairs.map(x=>x[0]),mp=mean(ps),sxx=ps.reduce((s,p)=>s+(p-mp)**2,0),sxy=pairs.reduce((s,[p,o])=>s+(p-mp)*(o-mo),0);
   const slope=sxy/sxx,intercept=mo-slope*mp;
   const within=(pairs.filter(([p,o])=>Math.abs(o-p)<=200).length)/n;
-  return{n,mae,rmse,r2:1-ssr/sst,slope,intercept,within}}
+  const bias=mean(err);
+  return{n,mae,rmse,r2:1-ssr/sst,slope,intercept,within,bias}}
 function coverageOf(records){let c80=0,c95=0,tot=0;for(const r of records){const p=predForRec(r);if(!p||r.v1m==null)continue;tot++;if(r.v1m>=p.PIn.lo80&&r.v1m<=p.PIn.hi80)c80++;if(r.v1m>=p.PIn.lo95&&r.v1m<=p.PIn.hi95)c95++}return{c80:c80/tot,c95:c95/tot,tot}}
 function embedPairs(filter){const out=[];for(const r of DATASET){if(filter&&!filter(r))continue;const p=predForRec(r);if(p&&r.v1m!=null)out.push([p.y,r.v1m])}return out}
 function kpi(label,val){return `<div class="kpi"><span>${label}</span><b>${val}</b></div>`}
@@ -1022,8 +1064,8 @@ function bootCI(){const groups={};for(const r of DATASET){const p=predForRec(r);
   maes.sort((a,b)=>a-b);r2s.sort((a,b)=>a-b);
   $('valExtra').innerHTML=`<div class="kgrid"><div class="kpi"><span>MAE 95% CI</span><b>${Math.round(quantileSorted(maes,.025))}–${Math.round(quantileSorted(maes,.975))}</b></div><div class="kpi"><span>R² 95% CI</span><b>${quantileSorted(r2s,.025).toFixed(2)}–${quantileSorted(r2s,.975).toFixed(2)}</b></div></div><div class="reason">${L('200 次患者级 bootstrap（同一患者双眼整簇重抽样）。','200 patient-level bootstraps (both eyes resampled as a cluster).')}</div>`}
 function subgroupTable(){const groups=[[L('散光 Toric','Toric'),r=>r.toric===1],[L('非散光','Non-toric'),r=>r.toric===0],['ICL 12.1',r=>r.size===12.1],['ICL 12.6',r=>r.size===12.6],['ICL 13.2',r=>r.size===13.2],['ICL 13.7',r=>r.size===13.7],[L('水平植入','Horizontal'),r=>r.orient===0],[L('垂直植入','Vertical'),r=>r.orient===90],[L('女','Female'),r=>r.sex==='F'],[L('男','Male'),r=>r.sex==='M'],[L('年龄<25','Age<25'),r=>r.age!=null&&r.age<25],[L('年龄≥25','Age≥25'),r=>r.age!=null&&r.age>=25]];
-  let rows='';for(const [name,f] of groups){const m=metrics(embedPairs(f));if(!m)continue;rows+=`<tr><td style="text-align:left">${name}</td><td>${m.n}</td><td>${Math.round(m.mae)}</td><td>${pct(m.within)}</td><td>${m.r2.toFixed(2)}</td></tr>`}
-  $('subgroupPanel').innerHTML=`<div class="table-wrap"><table><thead><tr><th>${L('亚组','Subgroup')}</th><th>n</th><th>MAE</th><th>±200</th><th>R²</th></tr></thead><tbody>${rows}</tbody></table></div><div class="reason">${L('窄亚组内结局方差小，R² 可不稳定甚至为负，以 MAE 为准。','In narrow subgroups R² is unstable; read MAE.')}</div>`}
+  let rows='';for(const [name,f] of groups){const m=metrics(embedPairs(f));if(!m)continue;rows+=`<tr><td style="text-align:left">${name}</td><td>${m.n}</td><td>${(m.bias>=0?'+':'')+Math.round(m.bias)}</td><td>${Math.round(m.mae)}</td><td>${pct(m.within)}</td><td>${m.r2.toFixed(2)}</td></tr>`}
+  $('subgroupPanel').innerHTML=`<div class="table-wrap"><table><thead><tr><th>${L('亚组','Subgroup')}</th><th>n</th><th>${L('偏差(实测−预测)','Bias (obs−pred)')}</th><th>MAE</th><th>±200</th><th>R²</th></tr></thead><tbody>${rows}</tbody></table></div><div class="reason">${L('窄亚组内结局方差小，R² 可不稳定甚至为负，以 MAE 为准。偏差显著偏离 0 的亚组（如水平/垂直植入）提示模型对该亚组存在系统性高估/低估。','In narrow subgroups R² is unstable; read MAE. A bias far from 0 (e.g. horizontal vs vertical) indicates systematic over/under-prediction in that subgroup.')}</div>`}
 function driftTable(){let rows='';for(const y of [2022,2023,2024,2025]){const m=metrics(embedPairs(r=>r.year===y));const cov=coverageOf(DATASET.filter(r=>r.year===y));if(!m)continue;rows+=`<tr><td style="text-align:left">${y}</td><td>${m.n}</td><td>${Math.round(m.mae)}</td><td>${m.r2.toFixed(2)}</td><td>${Math.round(m.intercept)}</td><td>${pct(cov.c80)}</td></tr>`}
   $('driftPanel').innerHTML=`<div class="table-wrap"><table><thead><tr><th>${L('年份','Year')}</th><th>n</th><th>MAE</th><th>R²</th><th>${L('校准截距','Calib int.')}</th><th>80% cov</th></tr></thead><tbody>${rows}</tbody></table></div><div class="reason">${L('按登记年份近似“设备/流程漂移”；截距系统性变化提示需再校准。','Year approximates device/workflow drift; shifting intercept suggests recalibration.')}</div>`}
 function missingTable(){const keys=['acd','lt','stsh','stsv','wtw','size','orient','v1m'];let rows='';for(const k of keys){const miss=DATASET.filter(r=>r[k]==null).length;rows+=`<tr><td style="text-align:left">${fname(k)||k}</td><td>${miss}</td><td>${pct(miss/DATASET.length)}</td></tr>`}
@@ -1037,8 +1079,10 @@ function olsFit(rows,feats){const X=[],Y=[];for(const r of rows){const p=predFor
   const beta=solve(XtX,XtY);const pairs=X.map((row,i)=>[row.reduce((s,x,j)=>s+x*beta[j],0),Y[i]]);return{beta,m:metrics(pairs)}}
 function compareModels(){const cur=metrics(embedPairs());
   const wtw=olsFit(DATASET,['wtw']),wtwAcd=olsFit(DATASET,['wtw','acd']),sts=olsFit(DATASET,['acd','size','stsEff']),full=olsFit(DATASET,['acd','size','toric','stsEff','lt']);
-  const rowsD=[[L('当前锁定 5 变量','Current locked 5-var'),cur],['WTW '+L('仅','only'),wtw.m],['WTW+ACD',wtwAcd.m],['ACD+ICL+STS_eff',sts.m],[L('全量重拟合 5 变量','Refit 5-var'),full.m]];
-  $('comparePanel').innerHTML=`<div class="table-wrap"><table><thead><tr><th>${L('模型','Model')}</th><th>n</th><th>MAE</th><th>RMSE</th><th>R²</th><th>±200</th></tr></thead><tbody>${rowsD.map(([n,m])=>m?`<tr><td style="text-align:left">${n}</td><td>${m.n}</td><td>${Math.round(m.mae)}</td><td>${Math.round(m.rmse)}</td><td>${m.r2.toFixed(3)}</td><td>${pct(m.within)}</td></tr>`:'').join('')}</tbody></table></div><div class="reason">${L('全部模型（含“当前锁定”）均在内置开发队列上评估，为表观（in-sample）性能，会乐观高估——用于相对比较，而非独立外部验证。','All models — including the locked one — are evaluated on the embedded development cohort: apparent (in-sample) performance that is optimistic; for relative comparison, not external validation.')}</div>`}
+  const horizRecs=DATASET.filter(r=>r.orient===0&&r.stsh!=null&&r.stsv!=null&&r.lt!=null&&r.v1m!=null);
+  const zhuH=metrics(horizRecs.map(r=>[zhuVault(r.stsh,r.stsv,r.lt,r.size),r.v1m])),curH=metrics(embedPairs(r=>horizRecs.includes(r)));
+  const rowsD=[[L('当前锁定 5 变量','Current locked 5-var'),cur],[L('锁定模型 · 仅水平植入眼','Locked model · horizontal eyes only'),curH],[L('Zhu 2021 已发表公式（固定系数）· 仅水平植入眼','Zhu 2021 published formula (fixed coef.) · horizontal eyes only'),zhuH],['WTW '+L('仅','only'),wtw.m],['WTW+ACD',wtwAcd.m],['ACD+ICL+STS_eff',sts.m],[L('全量重拟合 5 变量','Refit 5-var'),full.m]];
+  $('comparePanel').innerHTML=`<div class="table-wrap"><table><thead><tr><th>${L('模型','Model')}</th><th>n</th><th>MAE</th><th>RMSE</th><th>R²</th><th>±200</th></tr></thead><tbody>${rowsD.map(([n,m])=>m?`<tr><td style="text-align:left">${n}</td><td>${m.n}</td><td>${Math.round(m.mae)}</td><td>${Math.round(m.rmse)}</td><td>${m.r2.toFixed(3)}</td><td>${pct(m.within)}</td></tr>`:'').join('')}</tbody></table></div><div class="reason">${L('全部模型（含“当前锁定”）均在内置开发队列上评估，为表观（in-sample）性能，会乐观高估——用于相对比较，而非独立外部验证。例外：Zhu 2021 为外部已发表公式（BMC Ophthalmol 2021;21:199），在本队列上为真正的外部评估，因此与样本内模型比较并不公平。','All models — including the locked one — are evaluated on the embedded development cohort: apparent (in-sample) performance that is optimistic; for relative comparison, not external validation. Exception: Zhu 2021 is an external published formula (BMC Ophthalmol 2021;21:199), so this is a genuine external evaluation and not a like-for-like comparison with in-sample models.')}</div>`}
 let baselineCSV='';
 function recalPanel(){$('recalPanel').innerHTML=`<div class="reason">${L('在你的外部数据上，仅拟合 实测 = a + b×预测，保留变量结构。','On your external data, fit observed = a + b×predicted only, keeping the variable structure.')}</div>
   <textarea id="recalText" class="batch-text" style="min-height:90px">id,eye,acd,lt,stsh,stsv,wtw,size,toric,angle,vault
@@ -1093,7 +1137,7 @@ function reportHTML(lang,type,redact,sign){const eyes=state.bilateral?['OD','OS'
         <tr><td style="text-align:left">P(&lt;250 / 250–750 / &gt;750) ${LL(lang,'经验','empirical')}</td><td>${pct(p.ce.low)} / ${pct(p.ce.opt)} / ${pct(p.ce.high)}</td></tr>
         <tr><td style="text-align:left">${LL(lang,'落入目标区概率','Target-interval probability')}</td><td>${pct(p.pTn)} <span class="src-tag">/ ${LL(lang,'经验','emp')} ${pct(p.pTe)}</span></td></tr>
         <tr><td style="text-align:left">${LL(lang,'输入','Inputs')}</td><td>ACD ${e.acd}, LT ${e.lt}, STS-H/V ${fmt(p.resolved.h,2)}/${fmt(p.resolved.v,2)}, ICL ${(+e.size).toFixed(1)}, θ ${e.angle}°, ${+e.toric?'Toric':'Non-toric'}${p.resolved&&e.source==='estimated'?' ('+LL(lang,'沟径由WTW推得','STS from WTW')+')':''}</td></tr>
-        </tbody></table>${p.ood.reasons.length?`<div class="reason">${LL(lang,'可靠性说明','Reliability')}: ${p.ood.reasons.join('；')}</div>`:''}${p.unstable?`<div class="reason">⚠ ${LL(lang,'该眼正态与经验概率差异较大：以上为模型估计概率而非确切发生率，请结合区间与可靠性等级判读。','Normal vs empirical probabilities diverge for this eye — these are model estimates, not observed event rates; read with the interval and reliability grade.')}</div>`:''}</div>`}).join('');
+        </tbody></table>${safetyFlags(e).map(f=>`<div class="reason">${f.lv==='warn'?'⚠ ':'ℹ '}${f.t}</div>`).join('')}${p.ood.reasons.length?`<div class="reason">${LL(lang,'可靠性说明','Reliability')}: ${p.ood.reasons.join('；')}</div>`:''}${p.unstable?`<div class="reason">⚠ ${LL(lang,'该眼正态与经验概率差异较大：以上为模型估计概率而非确切发生率，请结合区间与可靠性等级判读。','Normal vs empirical probabilities diverge for this eye — these are model estimates, not observed event rates; read with the interval and reliability grade.')}</div>`:''}</div>`}).join('');
   } else {
     body=eyes.map(eye=>{const p=predictEye(eye);if(p.invalid)return '';const yr=Math.round(p.y/25)*25;
       return `<div style="margin-bottom:10px"><b>${eye}</b>: ${LL(lang,'根据术前测量，模型估计术后 1 个月拱高大约在','Based on preoperative measurements, the model estimates a 1-month vault in roughly the')} <b>${Math.round(p.PIe.lo80/25)*25}–${Math.round(p.PIe.hi80/25)*25} μm</b> ${LL(lang,'范围（中心约 '+yr+' μm）','range (around '+yr+' μm)')}。${LL(lang,'落在理想范围 (250–750) 的估计概率约','The estimated chance of being in the ideal 250–750 range is about')} <b>${pct(p.cn.opt)}</b>${p.unstable?LL(lang,'（该值不稳定，仅为粗略估计）','(unstable — a rough estimate only)'):''}。<br><span class="reason">${LL(lang,'这是一个带有不确定度的估计，不是保证或测量值；具体手术方案（含 ICL 尺寸与方位）由您的医生综合判断决定。','This is an estimate with uncertainty, not a guarantee or a measurement; the surgical plan, including ICL size and orientation, is decided by your surgeon.')}</span></div>`}).join('');
@@ -1102,7 +1146,7 @@ function reportHTML(lang,type,redact,sign){const eyes=state.bilateral?['OD','OS'
     return `<p class="reason"><b>${LL(lang,'模型建议（仅供参考）','Model suggestion (reference only)')}:</b> ${eye} ICL ${b.size.toFixed(1)} mm / ${b.angle===0?LL(lang,'水平','horizontal'):LL(lang,'垂直','vertical')} → ${Math.round(b.p.y)} μm, ${LL(lang,'目标概率','target prob')} ${pct(b.p.pTn)}。</p>`})();
   const limit=`<p class="disc"><b>${LL(lang,'局限','Limitations')}:</b> ${LL(lang,'单中心回顾性 1 个月模型；点预测不确定度较大（残差 SD≈'+Math.round(SD1)+' μm）；不替代术者判断、厂家 sizing 或完整前节评估；跨中心使用前需外部验证与本地再校准。','Single-centre retrospective 1-month model; point prediction has substantial uncertainty (residual SD≈'+Math.round(SD1)+' μm); does not replace surgeon judgment, manufacturer sizing or full assessment; external validation and local recalibration required before cross-centre use.')}</p>`;
   const signBlock=sign?`<div class="report-sign"><div class="sig">${LL(lang,'预测/操作者','Operator')}</div><div class="sig">${LL(lang,'复核医师','Reviewer')}</div><div class="sig">${LL(lang,'最终决策医师','Final decision')}</div></div>`:'';
-  return `<div>${head}${body}${type==='doctor'?rec:''}${limit}${signBlock}<div class="src-tag" style="margin-top:8px">${LL(lang,'生成时间','Generated')}: ${BUILD_DATE} · v${MODEL_VERSION} · ${LL(lang,'本报告正文仅含临床数值，不含姓名/编号','report body contains clinical values only — no names/IDs')}</div></div>`}
+  return `<div>${head}${body}${type==='doctor'?rec:''}${limit}${signBlock}<div class="src-tag" style="margin-top:8px">${LL(lang,'生成时间','Generated')}: ${todayISO()} · v${MODEL_VERSION} · ${LL(lang,'本报告正文仅含临床数值，不含姓名/编号','report body contains clinical values only — no names/IDs')}</div></div>`}
 function renderReports(){const type=$('reportType').value,rl=$('reportLang').value,redact=$('reportRedact').checked,sign=$('reportSign').checked;
   let html;if(rl==='both')html=reportHTML('zh',type,redact,sign)+'<hr style="margin:16px 0;border:none;border-top:1px solid var(--line2)">'+reportHTML('en',type,redact,sign);
   else html=reportHTML(rl,type,redact,sign);
@@ -1194,6 +1238,12 @@ const TESTS=[
  ['QR encodes short string',()=>{const m=qrEncode('ICL');return m.length===21&&m[0][0]===1&&m[0][6]===1}],
  ['empirical quantile order',()=>empResidQ(.1)<empResidQ(.9)],
  ['inverted target limits stay in [0,1]',()=>{const sv=[state.targetLow,state.targetHigh];state.targetLow=750;state.targetHigh=250;const p=predictRaw({acd:3.2,lt:3.63,stsh:11.8,stsv:12.2,wtw:11.6,size:12.6,toric:1,angle:0,source:'measured'});const ok=p.pTn>=0&&p.pTn<=1&&p.pTe>=0&&p.pTe<=1;[state.targetLow,state.targetHigh]=sv;return ok}],
+ ['WTW fallback toggle changes STS source',()=>{const r=resolveEye({stsh:11.8,stsv:12.2,wtw:11.6,angle:0,source:'estimated'});return r.src==='estimated'&&Math.abs(r.h-estSTS(11.6).h)<1e-9}],
+ ['empty ACD → invalid (not 0)',()=>predictRaw({acd:NaN,lt:3.63,stsh:11.8,stsv:12.2,wtw:11.6,size:12.6,toric:1,angle:0,source:'measured'}).invalid===true],
+ ['out-of-range ACD 32 → invalid',()=>{const p=predictRaw({acd:32,lt:3.63,stsh:11.8,stsv:12.2,wtw:11.6,size:12.6,toric:1,angle:0,source:'measured'});return p.invalid&&p.badRange.includes('acd')}],
+ ['bootstrap band brackets point prediction',()=>[[12.6,0],[12.6,90],[13.7,0],[12.1,0]].every(([size,angle])=>{const p=predictRaw({acd:3.2,lt:3.63,stsh:11.8,stsv:12.2,wtw:11.6,size,toric:1,angle,source:'measured'});return p.boot.lo<=p.y&&p.y<=p.boot.hi})],
+ ['Zhu 2021 formula reference value',()=>Math.abs(zhuVault(11.54,11.96,3.67,12.6)-364.26)<0.05],
+ ['ACD<2.8 raises safety warning',()=>safetyFlags({acd:2.7,angle:0,optional:{}}).some(f=>f.lv==='warn')],
  ['baseline empirical PI = raw residual quantiles',()=>{const sv=state.sigmaBase;state.sigmaBase=151;const p=predictRaw({acd:3.2,lt:3.63,stsh:11.8,stsv:12.2,wtw:11.6,size:12.6,toric:1,angle:0,source:'measured'});const ok=Math.abs((p.PIe.hi80-p.y)-empResidQ(.9))<1e-6;state.sigmaBase=sv;return ok}]
 ];
 function runTests(){const rows=TESTS.map(([name,fn])=>{let ok=false,err='';try{ok=!!fn()}catch(e){err=e.message}return `<div class="testrow"><span>${name}</span><span class="${ok?'tpass':'tfail'}">${ok?'PASS':'FAIL'+(err?' ('+esc(err)+')':'')}</span></div>`});
@@ -1223,9 +1273,22 @@ function renderModelCard(){const m=metrics(embedPairs()),cov=coverageOf(DATASET)
     <div class="model-kpi"><span>${L('残差 SD','Residual SD')}</span><b>${Math.round(SD1)} μm</b></div></div>
   <p class="disc"><strong>${L('变量','Included')}:</strong> ACD, ICL size, Toric, ${L('方位校正有效沟径','orientation-adjusted')} STS_eff, LT. <strong>${L('未纳入','Not included')}:</strong> CLR, STSL/${L('睫状体形态','ciliary-body morphology')}, ${L('术后襻位','postoperative haptic position')}, ${L('照明/瞳孔','illumination/pupil')}. WTW ${L('仅用于一致性核查与缺失沟径回退','used only for consistency and missing-STS fallback')}.</p>
   <p class="disc"><strong>${L('适用范围','Applicable ranges')}:</strong> ACD ${fmt(COHORT.acd.min,2)}–${fmt(COHORT.acd.max,2)}; LT ${fmt(COHORT.lt.min,2)}–${fmt(COHORT.lt.max,2)}; STS-H ${fmt(COHORT.stsh.min,2)}–${fmt(COHORT.stsh.max,2)}; STS-V ${fmt(COHORT.stsv.min,2)}–${fmt(COHORT.stsv.max,2)}; WTW ${fmt(COHORT.wtw.min,2)}–${fmt(COHORT.wtw.max,2)}; ICL 12.1/12.6/13.2/13.7 mm.</p>
-  <p class="disc"><strong>${L('不确定度','Uncertainty')}:</strong> ${L('三类概率与目标概率同时给出“正态”与“经验/共形”两种；经验区间来自内置队列交叉验证残差（非对称）。系数不确定性由 300 次患者级 bootstrap 估计。可靠性等级 A–D 综合队列范围、Mahalanobis 距离、WTW 回退与缺失。','Class and target probabilities are given both "normal" and "empirical/conformal"; empirical intervals use embedded cohort residuals (asymmetric). Coefficient uncertainty is from 300 patient-level bootstraps. Reliability grade A–D blends cohort range, Mahalanobis distance, WTW fallback and missingness.')}</p>
+  <p class="disc"><strong>${L('不确定度','Uncertainty')}:</strong> ${L('三类概率与目标概率同时给出“正态”与“经验/共形”两种；经验区间来自锁定模型在内置队列上的样本内残差（非对称；该队列上的 80/95% 覆盖率按构造成立，外部数据上可能偏低）。系数不确定性由 300 次患者级 bootstrap 估计；因 bootstrap 抽样围绕样本内重拟合系数，显示时将其偏差平移到锁定模型的点预测上。可靠性等级 A–D 综合队列范围、Mahalanobis 距离、WTW 回退与缺失。','Class and target probabilities are given both "normal" and "empirical/conformal"; empirical intervals use the locked model\'s in-sample residuals on the embedded cohort (asymmetric; 80/95% coverage holds by construction on this cohort and may be lower on external data). Coefficient uncertainty is from 300 patient-level bootstraps; because the draws scatter around the in-sample refit, their deviations are shifted onto the locked point prediction. Reliability grade A–D blends cohort range, Mahalanobis distance, WTW fallback and missingness.')}</p>
   <p class="disc"><strong>${L('早期 logistic','Early logistic')}:</strong> ${L('预测术后第1天 >750 μm（不同终点，AUROC≈0.81），仅作交叉提示。','predicts day-1 >750 μm (different endpoint, AUROC≈0.81) — cross-check only.')}</p>
-  <p class="disc">${L('研究用途；非医疗器械；不替代术者判断。临床部署前需独立外部验证、局部校准与前瞻性影响研究。','Research use; not a medical device; does not replace surgeon judgment. Requires external validation, local recalibration and prospective evaluation before deployment.')}</p>`}
+  <p class="disc"><strong>${L('系数说明','Coefficient note')}:</strong> ${L('锁定系数与在内置 '+EMBED.nfit+' 眼上 OLS 重拟合的系数不同（ICL 尺寸 '+COEF.size.toFixed(1)+' vs '+BREFIT[2].toFixed(1)+' μm/mm；STS_eff '+COEF.sts.toFixed(1)+' vs '+BREFIT[4].toFixed(1)+' μm/mm）。锁定系数的来源队列需由作者说明；对 13.2/13.7 mm 等大尺寸，两者预测在示例计算中相差约 50–150 μm（锁定模型更低）。','The locked coefficients differ from an OLS refit on the embedded '+EMBED.nfit+' eyes (ICL size '+COEF.size.toFixed(1)+' vs '+BREFIT[2].toFixed(1)+' μm/mm; STS_eff '+COEF.sts.toFixed(1)+' vs '+BREFIT[4].toFixed(1)+' μm/mm). The source cohort of the locked coefficients should be documented; for 13.2/13.7 mm the two predictions differed by ~50–150 μm in worked examples (locked model lower).')}</p>
+  <p class="disc">${L('研究用途；非医疗器械；不替代术者判断。临床部署前需独立外部验证、局部校准与前瞻性影响研究。','Research use; not a medical device; does not replace surgeon judgment. Requires external validation, local recalibration and prospective evaluation before deployment.')}</p>
+  <p class="disc"><strong>${L('参考文献','References')}:</strong></p><ol class="disc" style="padding-left:18px">${REFS.map(r=>`<li><a href="${r.url}" target="_blank" rel="noopener">${esc(r.t)}</a></li>`).join('')}</ol>`}
+const REFS=[
+ {t:'国家卫生健康委. 有晶状体眼后房型人工晶状体植入术操作规范（2024年版）（ACD 一般 ≥2.80 mm；ECD ≥2000/mm²；年龄 ≥18 岁）',url:'https://www.nhc.gov.cn/yzygj/c100068/202412/72d6714239dd440291623eab397819dc/files/1736385429410_38008.pdf'},
+ {t:'FDA. EVO/EVO+ Visian ICL Professional Use Information, PMA P030016/S035 (2022): true ACD ≥3.00 mm; minimum ECD by age/ACD; age 21–45',url:'https://www.accessdata.fda.gov/cdrh_docs/pdf3/P030016S035C.pdf'},
+ {t:'Zhu QJ, et al. Short-term changes in and preoperative factors affecting vaulting after posterior chamber phakic ICL implantation. BMC Ophthalmol. 2021;21:199',url:'https://pubmed.ncbi.nlm.nih.gov/33957891/'},
+ {t:'Zhu QJ, et al. Validation of the vault prediction model based on the sulcus-to-sulcus diameter and lens thickness: a 925-eye prospective study. BMC Ophthalmol. 2022',url:'https://doi.org/10.1186/s12886-022-02698-z'},
+ {t:'Ouchi M. Vault of the phakic intraocular lens during vertical and horizontal fixation within patient comparison. Sci Rep. 2025',url:'https://www.nature.com/articles/s41598-025-95077-9'},
+ {t:'Li X, et al. EVO-ICL vault prediction: a data wrangling framework integrating multicenter big data and machine learning. Ophthalmol Ther. 2025',url:'https://pmc.ncbi.nlm.nih.gov/articles/PMC12882899/'},
+ {t:'Shen Y, et al. Big-data and artificial-intelligence-assisted vault prediction and EVO-ICL size selection for myopia correction. Br J Ophthalmol. 2023;107:201–206',url:'https://pmc.ncbi.nlm.nih.gov/articles/PMC9887372/'},
+ {t:'Packer M. Meta-analysis and review: effectiveness, safety, and central port design of the intraocular collamer lens. Clin Ophthalmol. 2016;10:1059–1077 (250–750 μm vault range)',url:'https://doi.org/10.2147/OPTH.S111620'}
+];
+let ZHU_BIAS={h:NaN,n:0};
 
 // ===== state encode / import / export =====
 function compactEye(e){return[+e.acd,+e.lt,+e.stsh,+e.stsv,+e.wtw,+e.size,+e.toric,+e.angle,e.source==='estimated'?'e':'m'].join(',')}
@@ -1236,7 +1299,7 @@ function decodeState(s){try{const p=s.split('~');if(p[0]!=='1')return false;
   const parseEye=str=>{const f=str.split(',');return{acd:+f[0],lt:+f[1],stsh:+f[2],stsv:+f[3],wtw:+f[4],size:+f[5],toric:+f[6],angle:+f[7],source:f[8]==='e'?'estimated':'measured'}};
   if(p[6])state.eyes.OD=Object.assign(defEye(),state.eyes.OD,parseEye(p[6]));
   if(p[7])state.eyes.OS=Object.assign(defEye(),state.eyes.OS,parseEye(p[7]));return true}catch(e){return false}}
-function summaryObj(){const eyes=state.bilateral?['OD','OS']:['OD'];return{version:MODEL_VERSION,generated:BUILD_DATE,language:state.lang,bilateral:state.bilateral,target:[state.targetLow,state.targetHigh],sigma:state.sigmaBase,
+function summaryObj(){const eyes=state.bilateral?['OD','OS']:['OD'];return{version:MODEL_VERSION,build:BUILD_DATE,generated:todayISO(),language:state.lang,bilateral:state.bilateral,target:[state.targetLow,state.targetHigh],sigma:state.sigmaBase,
   eyes:Object.fromEntries(eyes.map(e=>{const p=predictEye(e);return[e,{input:state.eyes[e],prediction:p.invalid?null:{y:p.y,PIn:p.PIn,PIe:p.PIe,classes:p.cn,target:p.pTn,grade:p.ood.grade}}]})),pinned:state.pinned,cases:state.cases}}
 function download(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:type||'application/json'}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),600)}
 
@@ -1310,6 +1373,7 @@ let hideTimer=null;
 function setupAutoclear(){document.addEventListener('visibilitychange',()=>{if(document.hidden&&state.autoclearMin>0){hideTimer=setTimeout(()=>wipeSensitive(false),state.autoclearMin*60000)}else if(hideTimer){clearTimeout(hideTimer);hideTimer=null}})}
 
 function init(){
+  {const hz=DATASET.filter(r=>r.orient===0&&r.stsh!=null&&r.stsv!=null&&r.lt!=null&&r.v1m!=null);if(hz.length)ZHU_BIAS={h:hz.reduce((s,r)=>s+(r.v1m-zhuVault(r.stsh,r.stsv,r.lt,r.size)),0)/hz.length,n:hz.length}}
   if(location.hash.startsWith('#s='))decodeState(location.hash.slice(3));
   bindStatic();setupPWA();setupAutoclear();
   applyLang(); // renders tabs + all
