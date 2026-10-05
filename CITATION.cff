@@ -1,0 +1,36 @@
+cff-version: 1.2.0
+message: "If you use this calculator, please cite it using these metadata."
+type: software
+title: "EVO ICL postoperative vault calculator"
+version: 1.0.0
+date-released: 2026-10-05
+license: MIT
+abstract: >-
+  A single-page research calculator for postoperative vault after EVO
+  Implantable Collamer Lens (ICL) implantation. It applies a locked
+  five-variable linear model of 1-month vault, plus a separate orientation
+  term, and shows uncertainty, safety notices, and a published-formula
+  cross-check. Research prototype: not clinically validated and not a
+  medical device.
+authors:
+  - family-names: Xia
+    given-names: Samuel
+repository-code: "https://github.com/samuelxia1004-max/evo-icl-calculator"
+url: "https://calculator.evo-icl.cn"
+keywords:
+  - ophthalmology
+  - implantable collamer lens
+  - EVO ICL
+  - vault prediction
+  - research software
+preferred-citation:
+  type: software
+  title: "EVO ICL postoperative vault calculator"
+  authors:
+    - family-names: Xia
+      given-names: Samuel
+  version: 1.0.0
+  date-released: 2026-10-05
+  license: MIT
+  url: "https://calculator.evo-icl.cn"
+  repository-code: "https://github.com/samuelxia1004-max/evo-icl-calculator"
