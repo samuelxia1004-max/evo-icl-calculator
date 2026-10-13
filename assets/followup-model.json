@@ -1,0 +1,76 @@
+{
+  "type": "linear",
+  "features": [
+    "acd",
+    "size",
+    "toric",
+    "lt",
+    "sts_eff",
+    "sin2",
+    "month1"
+  ],
+  "intercept": -100.74932401846695,
+  "coefficients": {
+    "acd": 57.830515943678115,
+    "size": 27.58713973768682,
+    "toric": -5.43281373686032,
+    "lt": -27.37452039145445,
+    "sts_eff": -21.49730751439069,
+    "sin2": -11.713018514621796,
+    "month1": 0.7247077918830063
+  },
+  "imputation": {
+    "acd": 3.17,
+    "size": 12.6,
+    "toric": 1.0,
+    "lt": 3.62,
+    "sts_eff": 11.8,
+    "sin2": 0.010926199633097235,
+    "month1": 359.0
+  },
+  "endpoint": "month6",
+  "selected_parameters": {
+    "model__alpha": 1
+  },
+  "validation": {
+    "n": 281,
+    "mae": 60.49384195919463,
+    "rmse": 79.54251403064211,
+    "r2": 0.7458927966881606,
+    "bias": 0.09556843778997222,
+    "within200": 0.9750889679715302,
+    "within250": 0.9857651245551602,
+    "calibration_slope": 0.9957407047537309,
+    "calibration_intercept": 1.3798280128955345,
+    "patients": 142,
+    "mae_ci95": [
+      53.19175150599607,
+      68.83792895307434
+    ],
+    "repeat_metrics": [
+      {
+        "n": 281,
+        "mae": 60.49384195919463,
+        "rmse": 79.54251403064211,
+        "r2": 0.7458927966881606,
+        "bias": 0.09556843778997222,
+        "within200": 0.9750889679715302,
+        "within250": 0.9857651245551602,
+        "calibration_slope": 0.9957407047537309,
+        "calibration_intercept": 1.3798280128955345
+      }
+    ],
+    "selected_parameters": {
+      "{\"model__alpha\": 1}": 4,
+      "{\"model__alpha\": 10}": 1
+    },
+    "validation": "5 patient-grouped folds"
+  },
+  "residual_quantiles": [
+    -80.61690661182195,
+    93.76844625597016,
+    -144.11118710482629,
+    171.07847474859352
+  ],
+  "status": "exploratory_refit_on_all_paired_eyes_no_temporal_test"
+}

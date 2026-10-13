@@ -1,0 +1,72 @@
+{
+  "status": "passed",
+  "page_mm": [
+    841,
+    1189
+  ],
+  "blocks": [
+    {
+      "heading": "ICL 术后拱高：\n从术前预测到随访更新",
+      "height": 695,
+      "scroll": 695,
+      "width": 2982,
+      "scrollWidth": 2982
+    },
+    {
+      "heading": "研究问题与方法",
+      "height": 746,
+      "scroll": 746,
+      "width": 1455,
+      "scrollWidth": 1455
+    },
+    {
+      "heading": "解剖与轴向匹配",
+      "height": 746,
+      "scroll": 746,
+      "width": 1455,
+      "scrollWidth": 1455
+    },
+    {
+      "heading": "术前模型：透明方法更稳健",
+      "height": 845,
+      "scroll": 845,
+      "width": 1455,
+      "scrollWidth": 1455
+    },
+    {
+      "heading": "区间：跨年份覆盖会变化",
+      "height": 845,
+      "scroll": 845,
+      "width": 1455,
+      "scrollWidth": 1455
+    },
+    {
+      "heading": "从术前模型走向随访模型",
+      "height": 746,
+      "scroll": 746,
+      "width": 1455,
+      "scrollWidth": 1455
+    },
+    {
+      "heading": "结论边界与后续研究",
+      "height": 746,
+      "scroll": 746,
+      "width": 1455,
+      "scrollWidth": 1455
+    },
+    {
+      "heading": "核心结论",
+      "height": 446,
+      "scroll": 446,
+      "width": 2982,
+      "scrollWidth": 2982
+    },
+    {
+      "heading": "footer",
+      "height": 162,
+      "scroll": 162,
+      "width": 2982,
+      "scrollWidth": 2982
+    }
+  ]
+}

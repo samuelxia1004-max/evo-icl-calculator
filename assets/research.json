@@ -1,0 +1,1596 @@
+{
+  "date": "2026-10-13",
+  "seed": 20261013,
+  "cohort": {
+    "source": {
+      "source_sha256": "75c405fd194f2c3410ac2fc0e70d8691677bcfb6a497c43ecff412cb5cc3dfa5",
+      "patient_records": 201,
+      "eyes": 399,
+      "conservative_same_name_groups": 200,
+      "issues": {
+        "invalid_stsh": 1,
+        "invalid_stsv": 0,
+        "invalid_lt": 2
+      },
+      "orientation_methods": {
+        "alignment": 192,
+        "clock": 160,
+        "explicit": 45,
+        "unresolved": 2
+      },
+      "unknown_orientation": 2,
+      "native_numeric_endpoint_rule": true,
+      "year_eye_counts": {
+        "2022": 54,
+        "2023": 152,
+        "2024": 157,
+        "2025": 36
+      }
+    },
+    "endpoints": {
+      "early": {
+        "n": 397,
+        "mean": 611.183879093199,
+        "sd": 233.1237130753668,
+        "median": 598.0,
+        "q25": 460.0,
+        "q75": 756.0
+      },
+      "month1": {
+        "n": 379,
+        "mean": 381.27704485488124,
+        "sd": 178.24384277595766,
+        "median": 360.0,
+        "q25": 245.0,
+        "q75": 483.5
+      },
+      "month3": {
+        "n": 330,
+        "mean": 366.7878787878788,
+        "sd": 170.52815463835339,
+        "median": 342.5,
+        "q25": 241.25,
+        "q75": 459.5
+      },
+      "month6": {
+        "n": 304,
+        "mean": 348.99013157894734,
+        "sd": 164.82074441671972,
+        "median": 322.5,
+        "q25": 235.0,
+        "q75": 435.0
+      },
+      "year1": {
+        "n": 65,
+        "mean": 250.47692307692307,
+        "sd": 96.34331640225292,
+        "median": 255.0,
+        "q25": 177.0,
+        "q75": 330.0
+      }
+    },
+    "missingness": {
+      "acd": 0,
+      "size": 0,
+      "toric": 0,
+      "lt": 6,
+      "sts_eff": 3,
+      "sin2": 2,
+      "wtw": 0,
+      "acv": 0,
+      "aca": 0,
+      "al": 6,
+      "age": 0,
+      "sex": 0,
+      "cyl": 173
+    },
+    "complete_core_month1": 370,
+    "development": {
+      "eyes": 341,
+      "patients": 173,
+      "years": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "temporal_test": {
+      "eyes": 29,
+      "patients": 15,
+      "year": 2025
+    }
+  },
+  "models": {
+    "mean": {
+      "n": 341,
+      "mae": 132.49375868205368,
+      "rmse": 168.16308036455212,
+      "r2": -0.006144120277242167,
+      "bias": -0.012191770429917476,
+      "within200": 0.7908113391984358,
+      "within250": 0.8934506353861192,
+      "calibration_slope": -3.9905664461214507,
+      "calibration_intercept": 1896.7323737675467,
+      "patients": 173,
+      "mae_ci95": [
+        118.64544550627325,
+        146.84195758868276
+      ],
+      "repeat_metrics": [
+        {
+          "n": 341,
+          "mae": 132.67174679892793,
+          "rmse": 168.58314445441022,
+          "r2": -0.011173269328602187,
+          "bias": -0.04026107457991223,
+          "within200": 0.7947214076246334,
+          "within250": 0.8914956011730205,
+          "calibration_slope": -4.002825832259341,
+          "calibration_intercept": 1901.279434276596
+        },
+        {
+          "n": 341,
+          "mae": 132.2785084791376,
+          "rmse": 167.79663918353168,
+          "r2": -0.001760253164877712,
+          "bias": 0.01612045015853451,
+          "within200": 0.7859237536656891,
+          "within250": 0.8973607038123167,
+          "calibration_slope": -3.9919025385677385,
+          "calibration_intercept": 1897.3532911810767
+        },
+        {
+          "n": 341,
+          "mae": 132.53102076809554,
+          "rmse": 168.10945745571448,
+          "r2": -0.005498838338246603,
+          "bias": -0.012434686868374706,
+          "within200": 0.7917888563049853,
+          "within250": 0.8914956011730205,
+          "calibration_slope": -3.976970967537273,
+          "calibration_intercept": 1891.564395844967
+        }
+      ],
+      "selected_parameters": {
+        "{}": 15
+      },
+      "validation": "3 x 5 outer patient-grouped folds; 4 inner grouped folds"
+    },
+    "ols_anatomy": {
+      "n": 341,
+      "mae": 117.93879367000879,
+      "rmse": 150.2705107478483,
+      "r2": 0.19643460413655092,
+      "bias": 0.6919901211700602,
+      "within200": 0.8367546432062561,
+      "within250": 0.9159335288367546,
+      "calibration_slope": 0.9014634859239102,
+      "calibration_intercept": 36.83882112505303,
+      "patients": 173,
+      "mae_ci95": [
+        105.67088120877501,
+        130.67465540811506
+      ],
+      "repeat_metrics": [
+        {
+          "n": 341,
+          "mae": 118.82672271242285,
+          "rmse": 152.1059314539514,
+          "r2": 0.1768299136521554,
+          "bias": -0.38568961010601427,
+          "within200": 0.8299120234604106,
+          "within250": 0.906158357771261,
+          "calibration_slope": 0.863118792645073,
+          "calibration_intercept": 52.357790024614516
+        },
+        {
+          "n": 341,
+          "mae": 116.15234552798466,
+          "rmse": 147.49962692464203,
+          "r2": 0.22593198271053494,
+          "bias": 0.12457973509302486,
+          "within200": 0.8475073313782991,
+          "within250": 0.9266862170087976,
+          "calibration_slope": 0.9642794399320695,
+          "calibration_intercept": 13.456301958020651
+        },
+        {
+          "n": 341,
+          "mae": 118.83731276961885,
+          "rmse": 151.2059738649515,
+          "r2": 0.18654191604696246,
+          "bias": 2.33708023852317,
+          "within200": 0.8328445747800587,
+          "within250": 0.9149560117302052,
+          "calibration_slope": 0.8769922251945885,
+          "calibration_intercept": 44.70237139252393
+        }
+      ],
+      "selected_parameters": {
+        "{}": 15
+      },
+      "validation": "3 x 5 outer patient-grouped folds; 4 inner grouped folds",
+      "coverage80": 0.8035190615835777,
+      "coverage95": 0.9472140762463344,
+      "interval_width80": 373.1556866160664
+    },
+    "ols_axis": {
+      "n": 341,
+      "mae": 111.93804955294935,
+      "rmse": 142.41836439156535,
+      "r2": 0.2781750525358228,
+      "bias": -0.07491010108106932,
+      "within200": 0.8396871945259042,
+      "within250": 0.906158357771261,
+      "calibration_slope": 0.9209248768150241,
+      "calibration_intercept": 30.109791558353475,
+      "patients": 173,
+      "mae_ci95": [
+        100.46227222567786,
+        123.59734092321342
+      ],
+      "repeat_metrics": [
+        {
+          "n": 341,
+          "mae": 113.64615776740172,
+          "rmse": 145.10231167793697,
+          "r2": 0.2508893992085147,
+          "bias": -1.012520279387009,
+          "within200": 0.8299120234604106,
+          "within250": 0.8973607038123167,
+          "calibration_slope": 0.8808279507103757,
+          "calibration_intercept": 46.1859718465627
+        },
+        {
+          "n": 341,
+          "mae": 109.67205837606255,
+          "rmse": 139.73951865704393,
+          "r2": 0.3052384650037887,
+          "bias": 0.03107283653469873,
+          "within200": 0.8475073313782991,
+          "within250": 0.9120234604105572,
+          "calibration_slope": 0.9627134087668683,
+          "calibration_intercept": 14.141724053267806
+        },
+        {
+          "n": 341,
+          "mae": 112.4959325153838,
+          "rmse": 142.41326283971517,
+          "r2": 0.27839729339516495,
+          "bias": 0.7567171396091023,
+          "within200": 0.841642228739003,
+          "within250": 0.9090909090909091,
+          "calibration_slope": 0.9192332709678283,
+          "calibration_intercept": 30.00167877522991
+        }
+      ],
+      "selected_parameters": {
+        "{}": 15
+      },
+      "validation": "3 x 5 outer patient-grouped folds; 4 inner grouped folds",
+      "coverage80": 0.7986314760508308,
+      "coverage95": 0.946236559139785,
+      "interval_width80": 359.1586964865817
+    },
+    "ridge_orientation": {
+      "n": 341,
+      "mae": 110.33736932557217,
+      "rmse": 139.92160458789058,
+      "r2": 0.30331633759768034,
+      "bias": 0.386331656958419,
+      "within200": 0.8318670576735093,
+      "within250": 0.9081133919843597,
+      "calibration_slope": 0.955498053123141,
+      "calibration_intercept": 16.557200745890157,
+      "patients": 173,
+      "mae_ci95": [
+        99.33014756827967,
+        121.64553332427269
+      ],
+      "repeat_metrics": [
+        {
+          "n": 341,
+          "mae": 111.58043321093203,
+          "rmse": 141.48558572871627,
+          "r2": 0.28776768524213825,
+          "bias": -0.5532415573978547,
+          "within200": 0.8299120234604106,
+          "within250": 0.9090909090909091,
+          "calibration_slope": 0.9474744793452559,
+          "calibration_intercept": 20.487730949973162
+        },
+        {
+          "n": 341,
+          "mae": 108.0411687787504,
+          "rmse": 137.46104501000505,
+          "r2": 0.3277101376145577,
+          "bias": 0.004969618910602167,
+          "within200": 0.8387096774193549,
+          "within250": 0.9090909090909091,
+          "calibration_slope": 0.9878953170100414,
+          "calibration_intercept": 4.59575751303688
+        },
+        {
+          "n": 341,
+          "mae": 111.39050598703409,
+          "rmse": 140.81818302495049,
+          "r2": 0.29447118993634513,
+          "bias": 1.7072669093625095,
+          "within200": 0.8269794721407625,
+          "within250": 0.906158357771261,
+          "calibration_slope": 0.9311243630141256,
+          "calibration_intercept": 24.588113774660428
+        }
+      ],
+      "selected_parameters": {
+        "{\"model__alpha\": 10}": 7,
+        "{\"model__alpha\": 1}": 4,
+        "{\"model__alpha\": 0.1}": 4
+      },
+      "validation": "3 x 5 outer patient-grouped folds; 4 inner grouped folds",
+      "coverage80": 0.7996089931573802,
+      "coverage95": 0.9393939393939394,
+      "interval_width80": 360.9213158210422
+    },
+    "ridge_extended": {
+      "n": 341,
+      "mae": 111.17601493048032,
+      "rmse": 139.8408616260704,
+      "r2": 0.30411282791827005,
+      "bias": -0.34522013422646486,
+      "within200": 0.8426197458455523,
+      "within250": 0.906158357771261,
+      "calibration_slope": 0.8898112164643449,
+      "calibration_intercept": 42.20930959666977,
+      "patients": 173,
+      "mae_ci95": [
+        100.07691262052121,
+        122.34628759149227
+      ],
+      "repeat_metrics": [
+        {
+          "n": 341,
+          "mae": 111.48082210092134,
+          "rmse": 140.35059055744236,
+          "r2": 0.2991488846352951,
+          "bias": -1.7316033481619908,
+          "within200": 0.844574780058651,
+          "within250": 0.9032258064516129,
+          "calibration_slope": 0.8951490129955609,
+          "calibration_intercept": 41.401105112201414
+        },
+        {
+          "n": 341,
+          "mae": 108.87855212327689,
+          "rmse": 137.40402342786942,
+          "r2": 0.3282677804076336,
+          "bias": -0.9523619952317554,
+          "within200": 0.8475073313782991,
+          "within250": 0.9120234604105572,
+          "calibration_slope": 0.9086129259418637,
+          "calibration_intercept": 35.59911649325121
+        },
+        {
+          "n": 341,
+          "mae": 113.16867056724269,
+          "rmse": 141.76797089289937,
+          "r2": 0.2849218187118814,
+          "bias": 1.6483049407143515,
+          "within200": 0.8357771260997068,
+          "within250": 0.9032258064516129,
+          "calibration_slope": 0.86567171045561,
+          "calibration_intercept": 49.627707184556684
+        }
+      ],
+      "selected_parameters": {
+        "{\"model__alpha\": 1}": 10,
+        "{\"model__alpha\": 10}": 5
+      },
+      "validation": "3 x 5 outer patient-grouped folds; 4 inner grouped folds",
+      "coverage80": 0.8084066471163245,
+      "coverage95": 0.9481915933528837,
+      "interval_width80": 369.52647812384043
+    },
+    "elastic_net": {
+      "n": 341,
+      "mae": 111.193428206751,
+      "rmse": 140.61555186606896,
+      "r2": 0.2964316128152146,
+      "bias": -0.16405348181114235,
+      "within200": 0.8435972629521017,
+      "within250": 0.9110459433040078,
+      "calibration_slope": 1.0376401269427824,
+      "calibration_intercept": -14.11607907528348,
+      "patients": 173,
+      "mae_ci95": [
+        99.78340248294552,
+        122.34151109724999
+      ],
+      "repeat_metrics": [
+        {
+          "n": 341,
+          "mae": 111.83751818772403,
+          "rmse": 141.31545082158402,
+          "r2": 0.2894795588854353,
+          "bias": -0.7711679307804508,
+          "within200": 0.844574780058651,
+          "within250": 0.9120234604105572,
+          "calibration_slope": 1.0436210419600436,
+          "calibration_intercept": -15.774386888973556
+        },
+        {
+          "n": 341,
+          "mae": 109.34588851146329,
+          "rmse": 138.67711135501628,
+          "r2": 0.31576252946407635,
+          "bias": -0.44453801935603826,
+          "within200": 0.8475073313782991,
+          "within250": 0.9149560117302052,
+          "calibration_slope": 1.080583056172775,
+          "calibration_intercept": -30.14710894280656
+        },
+        {
+          "n": 341,
+          "mae": 112.39687792106567,
+          "rmse": 141.85409342160656,
+          "r2": 0.28405275009613207,
+          "bias": 0.723545504703062,
+          "within200": 0.8387096774193549,
+          "within250": 0.906158357771261,
+          "calibration_slope": 0.988716282695529,
+          "calibration_intercept": 3.573258605929682
+        }
+      ],
+      "selected_parameters": {
+        "{\"model__alpha\": 0.5, \"model__l1_ratio\": 0.8}": 15
+      },
+      "validation": "3 x 5 outer patient-grouped folds; 4 inner grouped folds"
+    },
+    "random_forest": {
+      "n": 341,
+      "mae": 122.28531677871378,
+      "rmse": 154.69883582914164,
+      "r2": 0.1484002573468081,
+      "bias": -1.1809486991288063,
+      "within200": 0.8152492668621701,
+      "within250": 0.8993157380254154,
+      "calibration_slope": 0.8625411505427149,
+      "calibration_intercept": 53.21106976875651,
+      "patients": 173,
+      "mae_ci95": [
+        110.04172010362596,
+        134.9958589453339
+      ],
+      "repeat_metrics": [
+        {
+          "n": 341,
+          "mae": 121.3770222682362,
+          "rmse": 153.83848062007465,
+          "r2": 0.15797062214851953,
+          "bias": -2.193114635443922,
+          "within200": 0.8152492668621701,
+          "within250": 0.9002932551319648,
+          "calibration_slope": 0.8909477328083518,
+          "calibration_intercept": 43.40180707931564
+        },
+        {
+          "n": 341,
+          "mae": 120.66135606974703,
+          "rmse": 152.9500831298945,
+          "r2": 0.16766776446230347,
+          "bias": 0.712742173080837,
+          "within200": 0.8299120234604106,
+          "within250": 0.9032258064516129,
+          "calibration_slope": 0.9200767024477174,
+          "calibration_intercept": 29.720935080856435
+        },
+        {
+          "n": 341,
+          "mae": 124.8175719981581,
+          "rmse": 157.30794373745576,
+          "r2": 0.11956238542960129,
+          "bias": -2.0624736350233337,
+          "within200": 0.8005865102639296,
+          "within250": 0.8944281524926686,
+          "calibration_slope": 0.7765990163720755,
+          "calibration_intercept": 86.51046714609747
+        }
+      ],
+      "selected_parameters": {
+        "{\"model__max_depth\": 4, \"model__min_samples_leaf\": 12}": 6,
+        "{\"model__max_depth\": 8, \"model__min_samples_leaf\": 12}": 7,
+        "{\"model__max_depth\": 4, \"model__min_samples_leaf\": 5}": 2
+      },
+      "validation": "3 x 5 outer patient-grouped folds; 4 inner grouped folds"
+    },
+    "hist_gradient": {
+      "n": 341,
+      "mae": 121.37878299654072,
+      "rmse": 153.184480617557,
+      "r2": 0.16489012263105632,
+      "bias": -0.9828018586852556,
+      "within200": 0.8211143695014663,
+      "within250": 0.9042033235581622,
+      "calibration_slope": 0.870503816578355,
+      "calibration_intercept": 49.907691530314715,
+      "patients": 173,
+      "mae_ci95": [
+        109.43816963109316,
+        133.50744507937287
+      ],
+      "repeat_metrics": [
+        {
+          "n": 341,
+          "mae": 122.23603554122766,
+          "rmse": 153.80088562687587,
+          "r2": 0.15838212154131204,
+          "bias": -2.6076631721535173,
+          "within200": 0.8181818181818182,
+          "within250": 0.9032258064516129,
+          "calibration_slope": 0.852242391096173,
+          "calibration_intercept": 58.38108514973859
+        },
+        {
+          "n": 341,
+          "mae": 118.93999726681164,
+          "rmse": 149.84595331209934,
+          "r2": 0.20110938708472337,
+          "bias": 2.2822115525761313,
+          "within200": 0.8240469208211144,
+          "within250": 0.9090909090909091,
+          "calibration_slope": 0.9720159087548643,
+          "calibration_intercept": 8.41766035649606
+        },
+        {
+          "n": 341,
+          "mae": 122.96031618158284,
+          "rmse": 155.90660291369576,
+          "r2": 0.13517885926713358,
+          "bias": -2.622953956478381,
+          "within200": 0.8211143695014663,
+          "within250": 0.9002932551319648,
+          "calibration_slope": 0.7872531498840277,
+          "calibration_intercept": 82.9243290847095
+        }
+      ],
+      "selected_parameters": {
+        "{\"model__l2_regularization\": 100, \"model__max_leaf_nodes\": 5}": 2,
+        "{\"model__l2_regularization\": 10, \"model__max_leaf_nodes\": 9}": 7,
+        "{\"model__l2_regularization\": 10, \"model__max_leaf_nodes\": 5}": 5,
+        "{\"model__l2_regularization\": 100, \"model__max_leaf_nodes\": 9}": 1
+      },
+      "validation": "3 x 5 outer patient-grouped folds; 4 inner grouped folds"
+    },
+    "gradient_boost": {
+      "n": 341,
+      "mae": 120.16209618315634,
+      "rmse": 152.70537288280593,
+      "r2": 0.1702153605229826,
+      "bias": -5.205508767709082,
+      "within200": 0.8025415444770282,
+      "within250": 0.9002932551319648,
+      "calibration_slope": 0.9199460102632536,
+      "calibration_intercept": 35.20186803569698,
+      "patients": 173,
+      "mae_ci95": [
+        108.42491626790182,
+        132.51017064808352
+      ],
+      "repeat_metrics": [
+        {
+          "n": 341,
+          "mae": 118.33281436294135,
+          "rmse": 150.57839208153206,
+          "r2": 0.19328043332586242,
+          "bias": -5.133351981628419,
+          "within200": 0.8181818181818182,
+          "within250": 0.9090909090909091,
+          "calibration_slope": 1.0209753764186746,
+          "calibration_intercept": -2.731154851558638
+        },
+        {
+          "n": 341,
+          "mae": 119.17122238686196,
+          "rmse": 152.5867102333035,
+          "r2": 0.17161791209548938,
+          "bias": -4.846434131040261,
+          "within200": 0.8093841642228738,
+          "within250": 0.8973607038123167,
+          "calibration_slope": 0.9060975150998447,
+          "calibration_intercept": 40.08117053169011
+        },
+        {
+          "n": 341,
+          "mae": 122.98225179966569,
+          "rmse": 154.95101633358223,
+          "r2": 0.14574773614759606,
+          "bias": -5.636740190458566,
+          "within200": 0.7800586510263929,
+          "within250": 0.8944281524926686,
+          "calibration_slope": 0.8327651392712413,
+          "calibration_intercept": 68.25558842695948
+        }
+      ],
+      "selected_parameters": {
+        "{\"model__max_depth\": 2, \"model__min_samples_leaf\": 16}": 4,
+        "{\"model__max_depth\": 3, \"model__min_samples_leaf\": 16}": 6,
+        "{\"model__max_depth\": 3, \"model__min_samples_leaf\": 8}": 2,
+        "{\"model__max_depth\": 2, \"model__min_samples_leaf\": 8}": 3
+      },
+      "validation": "3 x 5 outer patient-grouped folds; 4 inner grouped folds"
+    },
+    "svr": {
+      "n": 341,
+      "mae": 118.12930346773186,
+      "rmse": 150.50596930501342,
+      "r2": 0.19405614622682707,
+      "bias": -13.096145331448648,
+      "within200": 0.8260019550342131,
+      "within250": 0.9081133919843597,
+      "calibration_slope": 1.068855200981405,
+      "calibration_intercept": -12.131209377783387,
+      "patients": 173,
+      "mae_ci95": [
+        105.61521884569181,
+        130.46800689858966
+      ],
+      "repeat_metrics": [
+        {
+          "n": 341,
+          "mae": 117.36044987210819,
+          "rmse": 150.4287630450255,
+          "r2": 0.1948829035874512,
+          "bias": -16.104258120278693,
+          "within200": 0.8123167155425219,
+          "within250": 0.9149560117302052,
+          "calibration_slope": 1.0822988076566087,
+          "calibration_intercept": -13.849961184664329
+        },
+        {
+          "n": 341,
+          "mae": 118.70573116768658,
+          "rmse": 150.54005917799978,
+          "r2": 0.19369111598402877,
+          "bias": -12.65644981375967,
+          "within200": 0.8269794721407625,
+          "within250": 0.9002932551319648,
+          "calibration_slope": 1.0913227984685019,
+          "calibration_intercept": -20.897086408431527
+        },
+        {
+          "n": 341,
+          "mae": 118.32172936340082,
+          "rmse": 150.54908569201493,
+          "r2": 0.19359441910900121,
+          "bias": -10.527728060307581,
+          "within200": 0.8387096774193549,
+          "within250": 0.9090909090909091,
+          "calibration_slope": 1.032943996819104,
+          "calibration_intercept": -1.646580540254307
+        }
+      ],
+      "selected_parameters": {
+        "{\"model__C\": 100, \"model__epsilon\": 50}": 4,
+        "{\"model__C\": 30, \"model__epsilon\": 20}": 3,
+        "{\"model__C\": 30, \"model__epsilon\": 50}": 5,
+        "{\"model__C\": 100, \"model__epsilon\": 20}": 3
+      },
+      "validation": "3 x 5 outer patient-grouped folds; 4 inner grouped folds"
+    },
+    "xgboost": {
+      "n": 341,
+      "mae": 119.61338118537314,
+      "rmse": 151.11774078661108,
+      "r2": 0.18744495314704765,
+      "bias": 0.5028985136298724,
+      "within200": 0.8172043010752686,
+      "within250": 0.906158357771261,
+      "calibration_slope": 0.9254000833780324,
+      "calibration_intercept": 27.836736142894534,
+      "patients": 173,
+      "mae_ci95": [
+        108.0034129473968,
+        131.63058709746517
+      ],
+      "repeat_metrics": [
+        {
+          "n": 341,
+          "mae": 119.08560654984191,
+          "rmse": 150.57447223449893,
+          "r2": 0.19332243372309033,
+          "bias": -0.43516992473881966,
+          "within200": 0.8123167155425219,
+          "within250": 0.9149560117302052,
+          "calibration_slope": 0.9653980348147312,
+          "calibration_intercept": 13.571395761522147
+        },
+        {
+          "n": 341,
+          "mae": 118.48501806175254,
+          "rmse": 150.07803645817407,
+          "r2": 0.19863280864463928,
+          "bias": 2.5127770656015165,
+          "within200": 0.8269794721407625,
+          "within250": 0.9090909090909091,
+          "calibration_slope": 0.9736229152144782,
+          "calibration_intercept": 7.578728690473318
+        },
+        {
+          "n": 341,
+          "mae": 121.26951894452495,
+          "rmse": 152.70071366716024,
+          "r2": 0.17037961707341331,
+          "bias": -0.56891159997308,
+          "within200": 0.8123167155425219,
+          "within250": 0.8944281524926686,
+          "calibration_slope": 0.8371793001048878,
+          "calibration_intercept": 62.36008397668813
+        }
+      ],
+      "selected_parameters": {
+        "{\"model__max_depth\": 2, \"model__reg_lambda\": 10}": 3,
+        "{\"model__max_depth\": 3, \"model__reg_lambda\": 10}": 11,
+        "{\"model__max_depth\": 2, \"model__reg_lambda\": 100}": 1
+      },
+      "validation": "3 x 5 outer patient-grouped folds; 4 inner grouped folds"
+    }
+  },
+  "selection": {
+    "linear_best": "ridge_orientation",
+    "nonlinear_best": "svr",
+    "nonlinear_mae_improvement": -7.7919341421596755,
+    "paired_ci95": [
+      -14.649159917321679,
+      -1.2491796595997111
+    ],
+    "chosen": "ridge_orientation",
+    "rule": "Nonlinear improvement >=5 μm with positive paired patient bootstrap CI; otherwise best transparent linear.",
+    "paired_linear_improvements": {
+      "ols_anatomy": {
+        "mae_reduction": 7.601424344436594,
+        "ci95": [
+          1.1715915519351343,
+          13.963564662813035
+        ]
+      },
+      "ols_axis": {
+        "mae_reduction": 1.600680227377165,
+        "ci95": [
+          -2.0193483921345505,
+          5.254270706680277
+        ]
+      },
+      "mean": {
+        "mae_reduction": 22.156389356481522,
+        "ci95": [
+          11.58716588329649,
+          32.93958827702762
+        ]
+      }
+    },
+    "browser_default": "ridge_orientation"
+  },
+  "temporal": {
+    "mean": {
+      "n": 29,
+      "mae": 241.8200020224492,
+      "rmse": 263.33117423991837,
+      "r2": -0.02866879768029862,
+      "bias": -43.96116897562949,
+      "within200": 0.4482758620689655,
+      "within250": 0.6551724137931034,
+      "calibration_slope": null,
+      "calibration_intercept": null,
+      "mae_ci95": [
+        196.00824148043282,
+        292.08620967741933
+      ]
+    },
+    "ols_anatomy": {
+      "n": 29,
+      "mae": 169.82837969026454,
+      "rmse": 194.96640720495245,
+      "r2": 0.4361149343074314,
+      "bias": -13.138954993375576,
+      "within200": 0.6206896551724138,
+      "within250": 0.7931034482758621,
+      "calibration_slope": 1.8835102804934927,
+      "calibration_intercept": -349.8914679960181,
+      "mae_ci95": [
+        126.55954150606081,
+        211.1765784775613
+      ]
+    },
+    "ols_axis": {
+      "n": 29,
+      "mae": 156.01331100590608,
+      "rmse": 178.2777871102592,
+      "r2": 0.5285176009603456,
+      "bias": -21.77485745204949,
+      "within200": 0.7241379310344828,
+      "within250": 0.8620689655172413,
+      "calibration_slope": 1.6961190842731615,
+      "calibration_intercept": -258.24574455642625,
+      "mae_ci95": [
+        117.7893692140156,
+        191.39394495480298
+      ]
+    },
+    "ridge_orientation": {
+      "n": 29,
+      "mae": 149.73441632188553,
+      "rmse": 175.7426487461259,
+      "r2": 0.5418313698885834,
+      "bias": -25.18896514454607,
+      "within200": 0.7241379310344828,
+      "within250": 0.8620689655172413,
+      "calibration_slope": 1.6952191989169683,
+      "calibration_intercept": -252.09609610273432,
+      "mae_ci95": [
+        108.67485432969627,
+        187.57063275651765
+      ],
+      "coverage80": 0.6551724137931034,
+      "coverage95": 0.9655172413793104
+    },
+    "svr": {
+      "n": 29,
+      "mae": 160.8754033279427,
+      "rmse": 182.62469389154876,
+      "r2": 0.5052451989829794,
+      "bias": -18.53800643189964,
+      "within200": 0.7241379310344828,
+      "within250": 0.7931034482758621,
+      "calibration_slope": 1.932871604632434,
+      "calibration_intercept": -359.73814211180627,
+      "mae_ci95": [
+        123.73273385820745,
+        198.11474836038258
+      ]
+    }
+  },
+  "sensitivity": {
+    "fold_imputed_cohort": {
+      "orientation_fold_imputed": {
+        "n": 348,
+        "mae": 113.44905577808369,
+        "rmse": 142.65046675992104,
+        "r2": 0.27970859526298053,
+        "bias": -1.0980294659744287,
+        "within200": 0.8390804597701149,
+        "within250": 0.9137931034482759,
+        "calibration_slope": 0.9306193612579369,
+        "calibration_intercept": 27.343625727166543,
+        "patients": 176,
+        "mae_ci95": [
+          102.72179925316016,
+          124.86604640863392
+        ],
+        "repeat_metrics": [
+          {
+            "n": 348,
+            "mae": 113.44905577808369,
+            "rmse": 142.65046675992104,
+            "r2": 0.27970859526298053,
+            "bias": -1.0980294659744287,
+            "within200": 0.8390804597701149,
+            "within250": 0.9137931034482759,
+            "calibration_slope": 0.9306193612579369,
+            "calibration_intercept": 27.343625727166543
+          }
+        ],
+        "selected_parameters": {
+          "{\"model__alpha\": 1}": 2,
+          "{\"model__alpha\": 10}": 2,
+          "{\"model__alpha\": 100}": 1
+        },
+        "validation": "5 patient-grouped folds"
+      }
+    },
+    "one_eye_per_patient": {
+      "ridge_orientation": {
+        "n": 173,
+        "mae": 112.70314532642998,
+        "rmse": 143.42125664348652,
+        "r2": 0.27108337877118727,
+        "bias": -0.4244199823584157,
+        "within200": 0.8554913294797688,
+        "within250": 0.8901734104046243,
+        "calibration_slope": 0.9126714208170816,
+        "calibration_intercept": 34.63479792280268,
+        "patients": 173,
+        "mae_ci95": [
+          99.38762897425751,
+          126.96498819338235
+        ],
+        "repeat_metrics": [
+          {
+            "n": 173,
+            "mae": 112.70314532642998,
+            "rmse": 143.42125664348652,
+            "r2": 0.27108337877118727,
+            "bias": -0.4244199823584157,
+            "within200": 0.8554913294797688,
+            "within250": 0.8901734104046243,
+            "calibration_slope": 0.9126714208170816,
+            "calibration_intercept": 34.63479792280268
+          }
+        ],
+        "selected_parameters": {
+          "{\"model__alpha\": 1}": 2,
+          "{\"model__alpha\": 10}": 1,
+          "{\"model__alpha\": 0.1}": 2
+        },
+        "validation": "5 patient-grouped folds"
+      }
+    },
+    "conservative_same_name_grouping": {
+      "ridge_orientation": {
+        "n": 341,
+        "mae": 115.69392450268127,
+        "rmse": 146.1742822348264,
+        "r2": 0.23978012402600013,
+        "bias": -0.45899331461162113,
+        "within200": 0.8211143695014663,
+        "within250": 0.8944281524926686,
+        "calibration_slope": 0.8447442390996618,
+        "calibration_intercept": 59.39630348759467,
+        "patients": 172,
+        "mae_ci95": [
+          103.88892843890284,
+          127.6799695153617
+        ],
+        "repeat_metrics": [
+          {
+            "n": 341,
+            "mae": 115.69392450268127,
+            "rmse": 146.1742822348264,
+            "r2": 0.23978012402600013,
+            "bias": -0.45899331461162113,
+            "within200": 0.8211143695014663,
+            "within250": 0.8944281524926686,
+            "calibration_slope": 0.8447442390996618,
+            "calibration_intercept": 59.39630348759467
+          }
+        ],
+        "selected_parameters": {
+          "{\"model__alpha\": 1}": 2,
+          "{\"model__alpha\": 0.1}": 3
+        },
+        "validation": "5 patient-grouped folds"
+      }
+    },
+    "identity_note": "Primary groups are worksheet patient records. Same-name records are conservatively linked only in this sensitivity; actual identity requires clinical identifiers.",
+    "explicit_or_clock_axis_only": {
+      "ridge_orientation": {
+        "n": 182,
+        "mae": 113.65933850762403,
+        "rmse": 141.12073724435598,
+        "r2": 0.24512170699596159,
+        "bias": -0.8535350184427913,
+        "within200": 0.8626373626373627,
+        "within250": 0.9395604395604396,
+        "calibration_slope": 1.0215542113885052,
+        "calibration_intercept": -6.60382616716649,
+        "patients": 99,
+        "mae_ci95": [
+          99.25290557229677,
+          129.91173315466463
+        ],
+        "repeat_metrics": [
+          {
+            "n": 182,
+            "mae": 113.65933850762403,
+            "rmse": 141.12073724435598,
+            "r2": 0.24512170699596159,
+            "bias": -0.8535350184427913,
+            "within200": 0.8626373626373627,
+            "within250": 0.9395604395604396,
+            "calibration_slope": 1.0215542113885052,
+            "calibration_intercept": -6.60382616716649
+          }
+        ],
+        "selected_parameters": {
+          "{\"model__alpha\": 10}": 3,
+          "{\"model__alpha\": 100}": 2
+        },
+        "validation": "5 patient-grouped folds"
+      }
+    },
+    "axis_interpretation_note": "Alignment angles may be a toric optical axis rather than physical lens long-axis. The clinical team must verify correspondence; the sensitivity excludes those notes.",
+    "early_formula_observed_cylinder": {
+      "early_four_variable_observed_cylinder": {
+        "n": 198,
+        "mae": 162.79240319761166,
+        "rmse": 206.72907988169467,
+        "r2": 0.20771033000181927,
+        "bias": 1.330344157260897,
+        "within200": 0.6565656565656566,
+        "within250": 0.7525252525252525,
+        "calibration_slope": 0.834103433447166,
+        "calibration_intercept": 108.17681324105985,
+        "patients": 110,
+        "mae_ci95": [
+          141.38246662325395,
+          184.2742990974288
+        ],
+        "repeat_metrics": [
+          {
+            "n": 198,
+            "mae": 162.79240319761166,
+            "rmse": 206.72907988169467,
+            "r2": 0.20771033000181927,
+            "bias": 1.330344157260897,
+            "within200": 0.6565656565656566,
+            "within250": 0.7525252525252525,
+            "calibration_slope": 0.834103433447166,
+            "calibration_intercept": 108.17681324105985
+          }
+        ],
+        "selected_parameters": {
+          "{}": 5
+        },
+        "validation": "5 patient-grouped folds"
+      }
+    },
+    "legacy_locked_apparent": {
+      "n": 341,
+      "mae": 108.25959624365122,
+      "rmse": 139.1225694446664,
+      "r2": 0.3113596593611394,
+      "bias": -25.323054807862885,
+      "within200": 0.8475073313782991,
+      "within250": 0.9208211143695014,
+      "calibration_slope": 0.9951408473884308,
+      "calibration_intercept": 27.046840455216824
+    },
+    "legacy_note": "Coefficient provenance includes these development data, so this is historical/apparent scoring, never an independent model performance comparison."
+  },
+  "inference": {
+    "early_orientation": {
+      "difference": -117.21011831905344,
+      "ci95": [
+        -175.45163368084272,
+        -57.2651003544731
+      ],
+      "bootstrap": 3000,
+      "counts": {
+        "horizontal": 266,
+        "vertical": 129
+      }
+    },
+    "sulcus_anisotropy": {
+      "n": 398,
+      "difference": 0.450251256281407,
+      "ci95": [
+        0.4227778971989167,
+        0.4780030075187971
+      ]
+    },
+    "formula_comparison_common_cohort": {
+      "KS_horizontal_STS_proxy": {
+        "n": 394,
+        "mae": 235.4487461928933,
+        "rmse": 299.01431071041446,
+        "r2": -0.6634744980948759,
+        "bias": 116.02664467005043,
+        "within200": 0.5101522842639594,
+        "within250": 0.6269035532994924,
+        "calibration_slope": 0.09413298201610246,
+        "calibration_intercept": 544.7286178176835
+      },
+      "KS_binary_STS_proxy": {
+        "n": 394,
+        "mae": 205.85634263959392,
+        "rmse": 257.4240207750875,
+        "r2": -0.23290705604824846,
+        "bias": 14.861977157360089,
+        "within200": 0.5609137055837563,
+        "within250": 0.6802030456852792,
+        "calibration_slope": 0.31734974645375436,
+        "calibration_intercept": 414.0149834290931
+      },
+      "KS_ellipse_STS_proxy": {
+        "n": 394,
+        "mae": 197.05364228814392,
+        "rmse": 246.8392192936392,
+        "r2": -0.13360180205924865,
+        "bias": 11.097207986021457,
+        "within200": 0.5812182741116751,
+        "within250": 0.700507614213198,
+        "calibration_slope": 0.3794676804916296,
+        "calibration_intercept": 376.4178231735933
+      },
+      "Zhu2026_horizontal": {
+        "n": 394,
+        "mae": 178.09316527918784,
+        "rmse": 223.60725394520918,
+        "r2": 0.06974079580250514,
+        "bias": -51.90909461928924,
+        "within200": 0.6294416243654822,
+        "within250": 0.766497461928934,
+        "calibration_slope": 0.7812361251052733,
+        "calibration_intercept": 174.7410219407818
+      }
+    },
+    "KS_axis_improvement": {
+      "n": 394,
+      "mae_reduction": 38.39510390474937,
+      "ci95": [
+        18.740752816904088,
+        59.12952728582285
+      ],
+      "note": "ATA was not measured. These are modified STS-proxy implementations, not original KS validation."
+    },
+    "early_interaction_complete_cylinder": {
+      "n": 225,
+      "patients": 125,
+      "beta": -124.65276571332618,
+      "ci95": [
+        -292.75386301921947,
+        43.448331592567115
+      ],
+      "p": 0.1461180145691418,
+      "note": "Exploratory, complete observed refractive cylinder; no zero substitution."
+    },
+    "month1_interaction_complete_cylinder": {
+      "n": 215,
+      "patients": 120,
+      "beta": -116.01708895597939,
+      "ci95": [
+        -235.5176076867741,
+        3.4834297748153205
+      ],
+      "p": 0.057062574131447136,
+      "note": "Exploratory, complete observed refractive cylinder; no zero substitution."
+    }
+  },
+  "longitudinal": {
+    "month1": {
+      "n": 377,
+      "patients": 190,
+      "early": {
+        "n": 377,
+        "mean": 610.1803713527852,
+        "sd": 233.481454766914,
+        "median": 597.0,
+        "q25": 460.0,
+        "q75": 747.0
+      },
+      "followup": {
+        "n": 377,
+        "mean": 379.3607427055703,
+        "sd": 176.6640258491642,
+        "median": 360.0,
+        "q25": 245.0,
+        "q75": 480.0
+      },
+      "change": {
+        "n": 377,
+        "mean": -230.81962864721484,
+        "sd": 113.77854720983599,
+        "median": -221.0,
+        "q25": -305.0,
+        "q75": -160.0
+      },
+      "change_ci95": [
+        -246.02432982944953,
+        -216.34306235538122
+      ]
+    },
+    "month3": {
+      "n": 328,
+      "patients": 165,
+      "early": {
+        "n": 328,
+        "mean": 618.8262195121952,
+        "sd": 230.80810763927914,
+        "median": 610.0,
+        "q25": 476.25,
+        "q75": 754.5
+      },
+      "followup": {
+        "n": 328,
+        "mean": 364.6951219512195,
+        "sd": 168.67712958018393,
+        "median": 340.0,
+        "q25": 240.0,
+        "q75": 456.5
+      },
+      "change": {
+        "n": 328,
+        "mean": -254.1310975609756,
+        "sd": 115.87749730498278,
+        "median": -250.5,
+        "q25": -322.25,
+        "q75": -182.75
+      },
+      "change_ci95": [
+        -270.1482788002727,
+        -237.9451367781155
+      ]
+    },
+    "month6": {
+      "n": 302,
+      "patients": 152,
+      "early": {
+        "n": 302,
+        "mean": 614.7417218543046,
+        "sd": 223.30550452949328,
+        "median": 592.0,
+        "q25": 462.75,
+        "q75": 752.5
+      },
+      "followup": {
+        "n": 302,
+        "mean": 346.76490066225165,
+        "sd": 162.92091214586887,
+        "median": 320.0,
+        "q25": 235.0,
+        "q75": 425.0
+      },
+      "change": {
+        "n": 302,
+        "mean": -267.97682119205297,
+        "sd": 119.34974481415452,
+        "median": -258.5,
+        "q25": -333.75,
+        "q75": -198.25
+      },
+      "change_ci95": [
+        -286.02988685617476,
+        -250.93480509474787
+      ]
+    },
+    "year1": {
+      "n": 65,
+      "patients": 33,
+      "early": {
+        "n": 65,
+        "mean": 521.4307692307692,
+        "sd": 176.3696375186544,
+        "median": 496.0,
+        "q25": 363.0,
+        "q75": 638.0
+      },
+      "followup": {
+        "n": 65,
+        "mean": 250.47692307692307,
+        "sd": 96.34331640225292,
+        "median": 255.0,
+        "q25": 177.0,
+        "q75": 330.0
+      },
+      "change": {
+        "n": 65,
+        "mean": -270.95384615384614,
+        "sd": 125.44127495182143,
+        "median": -248.0,
+        "q25": -334.0,
+        "q75": -171.0
+      },
+      "change_ci95": [
+        -313.8632752403846,
+        -230.181953125
+      ]
+    },
+    "six_month_comparison": {
+      "preoperative_only": {
+        "n": 281,
+        "mae": 99.26754856924013,
+        "rmse": 129.42500896457761,
+        "r2": 0.32724837197726175,
+        "bias": -0.2907164619834833,
+        "within200": 0.8754448398576512,
+        "within250": 0.9466192170818505,
+        "calibration_slope": 0.968255130819625,
+        "calibration_intercept": 11.274702011773407,
+        "patients": 142,
+        "mae_ci95": [
+          87.24659867088883,
+          112.0603729167725
+        ],
+        "repeat_metrics": [
+          {
+            "n": 281,
+            "mae": 99.26754856924013,
+            "rmse": 129.42500896457761,
+            "r2": 0.32724837197726175,
+            "bias": -0.2907164619834833,
+            "within200": 0.8754448398576512,
+            "within250": 0.9466192170818505,
+            "calibration_slope": 0.968255130819625,
+            "calibration_intercept": 11.274702011773407
+          }
+        ],
+        "selected_parameters": {
+          "{\"model__alpha\": 10}": 2,
+          "{\"model__alpha\": 1}": 3
+        },
+        "validation": "5 patient-grouped folds"
+      },
+      "plus_observed_early": {
+        "n": 281,
+        "mae": 65.60568615775892,
+        "rmse": 84.8111045070187,
+        "r2": 0.7111158009017771,
+        "bias": -0.6440286638407912,
+        "within200": 0.9750889679715302,
+        "within250": 0.9928825622775801,
+        "calibration_slope": 0.9922165854299293,
+        "calibration_intercept": 3.3344040776755075,
+        "patients": 142,
+        "mae_ci95": [
+          58.174175738956855,
+          73.99829879687893
+        ],
+        "repeat_metrics": [
+          {
+            "n": 281,
+            "mae": 65.60568615775892,
+            "rmse": 84.8111045070187,
+            "r2": 0.7111158009017771,
+            "bias": -0.6440286638407912,
+            "within200": 0.9750889679715302,
+            "within250": 0.9928825622775801,
+            "calibration_slope": 0.9922165854299293,
+            "calibration_intercept": 3.3344040776755075
+          }
+        ],
+        "selected_parameters": {
+          "{\"model__alpha\": 1}": 3,
+          "{\"model__alpha\": 10}": 2
+        },
+        "validation": "5 patient-grouped folds"
+      },
+      "plus_observed_month1": {
+        "n": 281,
+        "mae": 60.49384195919463,
+        "rmse": 79.54251403064211,
+        "r2": 0.7458927966881606,
+        "bias": 0.09556843778997222,
+        "within200": 0.9750889679715302,
+        "within250": 0.9857651245551602,
+        "calibration_slope": 0.9957407047537309,
+        "calibration_intercept": 1.3798280128955345,
+        "patients": 142,
+        "mae_ci95": [
+          53.19175150599607,
+          68.83792895307434
+        ],
+        "repeat_metrics": [
+          {
+            "n": 281,
+            "mae": 60.49384195919463,
+            "rmse": 79.54251403064211,
+            "r2": 0.7458927966881606,
+            "bias": 0.09556843778997222,
+            "within200": 0.9750889679715302,
+            "within250": 0.9857651245551602,
+            "calibration_slope": 0.9957407047537309,
+            "calibration_intercept": 1.3798280128955345
+          }
+        ],
+        "selected_parameters": {
+          "{\"model__alpha\": 1}": 4,
+          "{\"model__alpha\": 10}": 1
+        },
+        "validation": "5 patient-grouped folds"
+      }
+    },
+    "six_month_selection": "Postoperative models are a separate research question; grouped CV on the common paired cohort, not external validation."
+  },
+  "environment": {
+    "numpy": "2.3.5",
+    "pandas": "2.2.3",
+    "scipy": "1.18.1",
+    "scikit-learn": "1.9.1",
+    "statsmodels": "0.15.0",
+    "openpyxl": "3.1.5",
+    "matplotlib": "3.11.2"
+  },
+  "ci_note": "Patient bootstrap intervals conditional on fixed out-of-fold predictions; do not cover the entire model-selection procedure.",
+  "calibration_bins": [
+    {
+      "predicted": 206.87374561247026,
+      "observed": 248.4,
+      "n": 20,
+      "sd": 111.62220114956381
+    },
+    {
+      "predicted": 298.99686430956325,
+      "observed": 300.4096385542169,
+      "n": 83,
+      "sd": 102.9087964839265
+    },
+    {
+      "predicted": 373.4141661380629,
+      "observed": 352.69747899159665,
+      "n": 119,
+      "sd": 138.2919752455632
+    },
+    {
+      "predicted": 455.66514452942965,
+      "observed": 462.56410256410254,
+      "n": 78,
+      "sd": 163.80401575588914
+    },
+    {
+      "predicted": 530.3854396339549,
+      "observed": 547.8787878787879,
+      "n": 33,
+      "sd": 198.51806554690393
+    }
+  ],
+  "residual_histogram": {
+    "edges": [
+      -800,
+      -780,
+      -760,
+      -740,
+      -720,
+      -700,
+      -680,
+      -660,
+      -640,
+      -620,
+      -600,
+      -580,
+      -560,
+      -540,
+      -520,
+      -500,
+      -480,
+      -460,
+      -440,
+      -420,
+      -400,
+      -380,
+      -360,
+      -340,
+      -320,
+      -300,
+      -280,
+      -260,
+      -240,
+      -220,
+      -200,
+      -180,
+      -160,
+      -140,
+      -120,
+      -100,
+      -80,
+      -60,
+      -40,
+      -20,
+      0,
+      20,
+      40,
+      60,
+      80,
+      100,
+      120,
+      140,
+      160,
+      180,
+      200,
+      220,
+      240,
+      260,
+      280,
+      300,
+      320,
+      340,
+      360,
+      380,
+      400,
+      420,
+      440,
+      460,
+      480,
+      500,
+      520,
+      540,
+      560,
+      580,
+      600,
+      620,
+      640,
+      660,
+      680,
+      700,
+      720,
+      740,
+      760,
+      780,
+      800,
+      820
+    ],
+    "counts": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      3,
+      1,
+      4,
+      2,
+      7,
+      10,
+      5,
+      8,
+      6,
+      15,
+      20,
+      18,
+      20,
+      20,
+      20,
+      14,
+      20,
+      20,
+      20,
+      14,
+      11,
+      12,
+      16,
+      12,
+      4,
+      4,
+      8,
+      2,
+      4,
+      3,
+      3,
+      5,
+      2,
+      1,
+      2,
+      2,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "tail_low": 0,
+    "tail_high": 0
+  }
+}
