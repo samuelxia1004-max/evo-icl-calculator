@@ -1,0 +1,99 @@
+{
+  "source": {
+    "source_sha256": "75c405fd194f2c3410ac2fc0e70d8691677bcfb6a497c43ecff412cb5cc3dfa5",
+    "patient_records": 201,
+    "eyes": 399,
+    "conservative_same_name_groups": 200,
+    "issues": {
+      "invalid_stsh": 1,
+      "invalid_stsv": 0,
+      "invalid_lt": 2
+    },
+    "orientation_methods": {
+      "alignment": 192,
+      "clock": 160,
+      "explicit": 45,
+      "unresolved": 2
+    },
+    "unknown_orientation": 2,
+    "native_numeric_endpoint_rule": true,
+    "year_eye_counts": {
+      "2022": 54,
+      "2023": 152,
+      "2024": 157,
+      "2025": 36
+    }
+  },
+  "endpoints": {
+    "early": {
+      "n": 397,
+      "mean": 611.183879093199,
+      "sd": 233.1237130753668,
+      "median": 598.0,
+      "q25": 460.0,
+      "q75": 756.0
+    },
+    "month1": {
+      "n": 379,
+      "mean": 381.27704485488124,
+      "sd": 178.24384277595766,
+      "median": 360.0,
+      "q25": 245.0,
+      "q75": 483.5
+    },
+    "month3": {
+      "n": 330,
+      "mean": 366.7878787878788,
+      "sd": 170.52815463835339,
+      "median": 342.5,
+      "q25": 241.25,
+      "q75": 459.5
+    },
+    "month6": {
+      "n": 304,
+      "mean": 348.99013157894734,
+      "sd": 164.82074441671972,
+      "median": 322.5,
+      "q25": 235.0,
+      "q75": 435.0
+    },
+    "year1": {
+      "n": 65,
+      "mean": 250.47692307692307,
+      "sd": 96.34331640225292,
+      "median": 255.0,
+      "q25": 177.0,
+      "q75": 330.0
+    }
+  },
+  "missingness": {
+    "acd": 0,
+    "size": 0,
+    "toric": 0,
+    "lt": 6,
+    "sts_eff": 3,
+    "sin2": 2,
+    "wtw": 0,
+    "acv": 0,
+    "aca": 0,
+    "al": 6,
+    "age": 0,
+    "sex": 0,
+    "cyl": 173
+  },
+  "complete_core_month1": 370,
+  "development": {
+    "eyes": 341,
+    "patients": 173,
+    "years": [
+      2022,
+      2023,
+      2024
+    ]
+  },
+  "temporal_test": {
+    "eyes": 29,
+    "patients": 15,
+    "year": 2025
+  }
+}

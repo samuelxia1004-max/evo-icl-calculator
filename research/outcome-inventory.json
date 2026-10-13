@@ -1,0 +1,55 @@
+{
+  "eligible_eyes": 399,
+  "variables": {
+    "va_month1": {
+      "numeric_available": 309,
+      "missing_or_nonnumeric": 90,
+      "numeric_min": 4.3,
+      "numeric_max": 5.2
+    },
+    "va_month3": {
+      "numeric_available": 314,
+      "missing_or_nonnumeric": 85,
+      "numeric_min": 4.4,
+      "numeric_max": 5.2
+    },
+    "va_month6": {
+      "numeric_available": 261,
+      "missing_or_nonnumeric": 138,
+      "numeric_min": 4.4,
+      "numeric_max": 5.2
+    },
+    "va_year1": {
+      "numeric_available": 44,
+      "missing_or_nonnumeric": 355,
+      "numeric_min": 4.8,
+      "numeric_max": 5.2
+    },
+    "ecd_month1": {
+      "numeric_available": 381,
+      "missing_or_nonnumeric": 18,
+      "numeric_min": 2564.0,
+      "numeric_max": 3436.0
+    },
+    "ecd_month3": {
+      "numeric_available": 328,
+      "missing_or_nonnumeric": 71,
+      "numeric_min": 2481.0,
+      "numeric_max": 3460.0
+    },
+    "ecd_month6": {
+      "numeric_available": 305,
+      "missing_or_nonnumeric": 94,
+      "numeric_min": 2321.0,
+      "numeric_max": 3460.0
+    },
+    "ecd_year1": {
+      "numeric_available": 65,
+      "missing_or_nonnumeric": 334,
+      "numeric_min": 2320.0,
+      "numeric_max": 3344.0
+    }
+  },
+  "visual_acuity_definition": "Unqualified registry visual-acuity columns; UDVA/CDVA and scale require clinician confirmation.",
+  "scope": "Feasibility inventory only, not an analysis of functional rehabilitation efficacy."
+}
